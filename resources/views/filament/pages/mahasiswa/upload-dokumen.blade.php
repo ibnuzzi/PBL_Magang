@@ -24,9 +24,16 @@
                     <x-slot name="heading">Pilih Pendaftaran</x-slot>
                     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                         @foreach($pendaftaranList as $p)
+                            @php
+                                $isSelected = $selectedPendaftaranId == $p->id;
+                                $btnBorder = $isSelected ? '#f59e0b' : '#e5e7eb';
+                                $btnBg = $isSelected ? '#fffbeb' : 'white';
+                                $btnStyle = "width: 100%; text-align: left; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid {$btnBorder}; background: {$btnBg}; cursor: pointer; transition: all 0.2s;";
+                                $wireClick = "\$set('selectedPendaftaranId', {$p->id})";
+                            @endphp
                             <button
-                                wire:click="$set('selectedPendaftaranId', {{ $p->id }})"
-                                style="width: 100%; text-align: left; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid {{ $selectedPendaftaranId == $p->id ? '#f59e0b' : '#e5e7eb' }}; background: {{ $selectedPendaftaranId == $p->id ? '#fffbeb' : 'white' }}; cursor: pointer; transition: all 0.2s;"
+                                wire:click="{{ $wireClick }}"
+                                style="{{ $btnStyle }}"
                             >
                                 <p style="font-size: 0.875rem; font-weight: 500; color: #111827; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                     @if($p->lowongan)

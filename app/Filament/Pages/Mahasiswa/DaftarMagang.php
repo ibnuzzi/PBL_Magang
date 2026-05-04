@@ -19,6 +19,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Auth;
 
 class DaftarMagang extends Page implements HasForms
 {
@@ -53,12 +54,12 @@ class DaftarMagang extends Page implements HasForms
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->role === 'mahasiswa';
+        return Auth::user()?->role === 'mahasiswa';
     }
 
     public function submitMandiri(): void
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         // Cek apakah sudah punya pendaftaran mandiri aktif
         $existing = PendaftaranMagang::where('mahasiswa_id', $user->id)

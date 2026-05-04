@@ -22,14 +22,15 @@ class DokumenPendaftaran extends Model
     public static function jenisOptions(): array
     {
         return [
-            'krs' => 'KRS',
-            'transkip_nilai' => 'Transkip Nilai',
-            'cv' => 'CV',
-            'surat_lamaran' => 'Surat Lamaran',
+            'khs' => 'KHS',
             'proposal_magang' => 'Proposal Magang',
-            'sertifikat_kompetensi' => 'Sertifikat Kompetensi',
-            'loa_perusahaan' => 'LOA Perusahaan',
+            'cv' => 'CV',
+            'surat_izin_ortu' => 'Surat Izin Ortu',
+            'surat_pengantar' => 'Surat Pengantar',
+            'surat_integritas' => 'Surat Integritas',
+            'surat_lamaran' => 'Surat Lamaran',
             'surat_rekomendasi' => 'Surat Rekomendasi',
+            'sertifikasi_kompetensi' => 'Sertifikasi Kompetensi',
         ];
     }
 
@@ -38,15 +39,15 @@ class DokumenPendaftaran extends Model
      */
     public static function dokumenPilihan(): array
     {
-        return ['krs', 'transkip_nilai', 'cv', 'surat_lamaran', 'proposal_magang'];
+        return ['khs', 'proposal_magang', 'cv', 'surat_izin_ortu', 'surat_pengantar', 'surat_integritas', 'surat_lamaran', 'surat_rekomendasi', 'sertifikasi_kompetensi'];
     }
 
     /**
-     * Dokumen default required untuk Flow B (Mandiri) — termasuk LOA.
+     * Dokumen default required untuk Flow B (Mandiri).
      */
     public static function dokumenMandiri(): array
     {
-        return ['krs', 'transkip_nilai', 'cv', 'surat_lamaran', 'proposal_magang', 'loa_perusahaan'];
+        return ['khs', 'proposal_magang', 'cv', 'surat_izin_ortu', 'surat_pengantar', 'surat_integritas', 'surat_lamaran', 'surat_rekomendasi', 'sertifikasi_kompetensi'];
     }
 
     // ─── Relationships ───────────────────────────────────────────────

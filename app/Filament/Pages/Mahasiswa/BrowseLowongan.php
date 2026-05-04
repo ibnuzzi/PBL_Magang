@@ -28,6 +28,7 @@ class BrowseLowongan extends Page
     public string $search = '';
     public string $filterJenis = '';
     public string $filterProdi = '';
+    public ?int $selectedDetailId = null;
 
     public static function canAccess(): bool
     {
@@ -52,6 +53,21 @@ class BrowseLowongan extends Page
         }
 
         return $query->orderBy('tanggal_tutup', 'asc')->get();
+    }
+
+    public function getSelectedDetailProperty()
+    {
+        return $this->selectedDetailId ? LowonganMagang::with('mitra')->find($this->selectedDetailId) : null;
+    }
+
+    public function openDetail(int $id): void
+    {
+        $this->selectedDetailId = $id;
+    }
+
+    public function closeDetail(): void
+    {
+        $this->selectedDetailId = null;
     }
 
     public function daftarLowongan(int $lowonganId): void

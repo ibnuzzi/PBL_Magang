@@ -9,6 +9,7 @@ use BackedEnum;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Auth;
 
 class StatusPendaftaran extends Page
 {
@@ -26,12 +27,12 @@ class StatusPendaftaran extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->role === 'mahasiswa';
+        return Auth::user()?->role === 'mahasiswa';
     }
 
     public function getPendaftaranProperty()
     {
-        return PendaftaranMagang::where('mahasiswa_id', auth()->id())
+        return PendaftaranMagang::where('mahasiswa_id', Auth::user()->id)
             ->with(['lowongan', 'mitra', 'dokumen', 'dosenPembimbing', 'approval.approver'])
             ->orderBy('created_at', 'desc')
             ->get();
@@ -43,7 +44,7 @@ class StatusPendaftaran extends Page
     public function submitPendaftaran(int $pendaftaranId): void
     {
         $pendaftaran = PendaftaranMagang::where('id', $pendaftaranId)
-            ->where('mahasiswa_id', auth()->id())
+            ->where('mahasiswa_id', Auth::user()->id)
             ->firstOrFail();
 
         try {
@@ -69,7 +70,7 @@ class StatusPendaftaran extends Page
     public function batalkanPendaftaran(int $pendaftaranId): void
     {
         $pendaftaran = PendaftaranMagang::where('id', $pendaftaranId)
-            ->where('mahasiswa_id', auth()->id())
+            ->where('mahasiswa_id', Auth::user()->id)
             ->whereIn('status', [PendaftaranMagang::STATUS_DRAFT, PendaftaranMagang::STATUS_DOKUMEN_KURANG])
             ->firstOrFail();
 

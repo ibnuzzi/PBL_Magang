@@ -22,8 +22,50 @@
         </div>
     </div>
 
+    {{-- Skeleton Loading --}}
+    <div wire:loading wire:target="search, filterJenis" style="width: 100%;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+            @for($i=0; $i<6; $i++)
+                <div style="background: white; border-radius: 0.75rem; border: 1px solid #e5e7eb; overflow: hidden; height: 100%;">
+                    <div style="padding: 1.25rem; border-bottom: 1px solid #f3f4f6; display: flex; justify-content: space-between;">
+                        <div style="width: 70%;">
+                            <div style="height: 1.25rem; background: #e5e7eb; border-radius: 0.25rem; width: 100%; margin-bottom: 0.5rem; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;"></div>
+                            <div style="height: 0.875rem; background: #e5e7eb; border-radius: 0.25rem; width: 60%; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;"></div>
+                        </div>
+                        <div style="height: 1.5rem; background: #e5e7eb; border-radius: 9999px; width: 20%; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;"></div>
+                    </div>
+                    <div style="padding: 1.25rem;">
+                        <div style="height: 0.875rem; background: #e5e7eb; border-radius: 0.25rem; width: 100%; margin-bottom: 0.5rem; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;"></div>
+                        <div style="height: 0.875rem; background: #e5e7eb; border-radius: 0.25rem; width: 80%; margin-bottom: 1.5rem; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;"></div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                            <div style="height: 0.875rem; background: #e5e7eb; border-radius: 0.25rem; width: 30%; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;"></div>
+                            <div style="height: 0.875rem; background: #e5e7eb; border-radius: 0.25rem; width: 20%; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                            <div style="height: 0.875rem; background: #e5e7eb; border-radius: 0.25rem; width: 40%; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;"></div>
+                            <div style="height: 0.875rem; background: #e5e7eb; border-radius: 0.25rem; width: 30%; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;"></div>
+                        </div>
+                    </div>
+                    <div style="padding: 1rem 1.25rem; background: #f9fafb; border-top: 1px solid #f3f4f6; display: flex; gap: 0.5rem;">
+                        <div style="height: 2.25rem; background: #e5e7eb; border-radius: 0.5rem; width: 50%; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;"></div>
+                        <div style="height: 2.25rem; background: #e5e7eb; border-radius: 0.5rem; width: 50%; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;"></div>
+                    </div>
+                </div>
+            @endfor
+        </div>
+    </div>
+
+    <style>
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+    </style>
+
     {{-- Lowongan Cards --}}
-    @if($this->lowongan->isEmpty())
+    <div wire:loading.remove wire:target="search, filterJenis" style="width: 100%;">
+        @if($this->lowongan->isEmpty())
         <x-filament::section>
             <div style="text-align: center; padding: 3rem 1rem;">
                 <div style="display: flex; justify-content: center; margin-bottom: 0.75rem; color: #9ca3af;">
@@ -98,19 +140,108 @@
                                 Kuota Penuh
                             </x-filament::button>
                         @else
-                            <x-filament::button
-                                wire:click="daftarLowongan({{ $item->id }})"
-                                wire:loading.attr="disabled"
-                                wire:target="daftarLowongan({{ $item->id }})"
-                                style="width: 100%;"
-                            >
-                                <span wire:loading.remove wire:target="daftarLowongan({{ $item->id }})">Daftar Sekarang</span>
-                                <span wire:loading wire:target="daftarLowongan({{ $item->id }})">Mendaftar...</span>
-                            </x-filament::button>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <x-filament::button
+                                    color="gray"
+                                    wire:click="openDetail({{ $item->id }})"
+                                    style="flex: 1;"
+                                    outlined
+                                >
+                                    Detail
+                                </x-filament::button>
+                                <x-filament::button
+                                    wire:click="daftarLowongan({{ $item->id }})"
+                                    wire:loading.attr="disabled"
+                                    wire:target="daftarLowongan({{ $item->id }})"
+                                    style="flex: 1;"
+                                >
+                                    <span wire:loading.remove wire:target="daftarLowongan({{ $item->id }})">Daftar</span>
+                                    <span wire:loading wire:target="daftarLowongan({{ $item->id }})">Mendaftar...</span>
+                                </x-filament::button>
+                            </div>
                         @endif
                     </div>
                 </div>
             @endforeach
         </div>
+        @endif
+    </div>
+
+    {{-- Modal Detail Lowongan --}}
+    @if($this->selectedDetail)
+        <div style="position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); padding: 1rem;">
+            <div style="background: white; border-radius: 0.75rem; width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);">
+                
+                {{-- Modal Header --}}
+                <div style="padding: 1.25rem; border-bottom: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <h2 style="font-size: 1.25rem; font-weight: 600; color: #111827; margin: 0;">{{ $this->selectedDetail->judul }}</h2>
+                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0.25rem 0 0 0;">{{ $this->selectedDetail->mitra->nama }}</p>
+                    </div>
+                    <button wire:click="closeDetail" style="color: #9ca3af; background: none; border: none; cursor: pointer; padding: 0.25rem;">
+                        <x-filament::icon icon="heroicon-o-x-mark" style="width: 24px; height: 24px;" />
+                    </button>
+                </div>
+
+                {{-- Modal Body --}}
+                <div style="padding: 1.25rem; overflow-y: auto; flex: 1;">
+                    <div style="margin-bottom: 1.5rem;">
+                        <h4 style="font-size: 0.875rem; font-weight: 600; color: #374151; margin: 0 0 0.5rem 0;">Deskripsi Lowongan</h4>
+                        <p style="font-size: 0.875rem; color: #4b5563; line-height: 1.5; margin: 0; white-space: pre-wrap;">{{ $this->selectedDetail->deskripsi ?? 'Tidak ada deskripsi.' }}</p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; background: #f9fafb; padding: 1rem; border-radius: 0.5rem;">
+                        <div>
+                            <span style="display: block; font-size: 0.75rem; color: #6b7280; margin-bottom: 0.25rem;">Jenis Magang</span>
+                            <span style="font-size: 0.875rem; font-weight: 500; color: #111827;">{{ ucfirst($this->selectedDetail->jenis_magang) }}</span>
+                        </div>
+                        <div>
+                            <span style="display: block; font-size: 0.75rem; color: #6b7280; margin-bottom: 0.25rem;">Batas Pendaftaran</span>
+                            <span style="font-size: 0.875rem; font-weight: 500; color: #111827;">{{ $this->selectedDetail->tanggal_tutup->format('d M Y') }}</span>
+                        </div>
+                        <div>
+                            <span style="display: block; font-size: 0.75rem; color: #6b7280; margin-bottom: 0.25rem;">Syarat IPK Minimal</span>
+                            <span style="font-size: 0.875rem; font-weight: 500; color: #111827;">{{ $this->selectedDetail->syarat_ipk > 0 ? number_format($this->selectedDetail->syarat_ipk, 2) : 'Tidak ada syarat' }}</span>
+                        </div>
+                        <div>
+                            <span style="display: block; font-size: 0.75rem; color: #6b7280; margin-bottom: 0.25rem;">Syarat Semester Minimal</span>
+                            <span style="font-size: 0.875rem; font-weight: 500; color: #111827;">{{ $this->selectedDetail->syarat_semester > 1 ? $this->selectedDetail->syarat_semester : 'Tidak ada syarat' }}</span>
+                        </div>
+                        <div>
+                            <span style="display: block; font-size: 0.75rem; color: #6b7280; margin-bottom: 0.25rem;">Mulai Magang</span>
+                            <span style="font-size: 0.875rem; font-weight: 500; color: #111827;">{{ $this->selectedDetail->tanggal_mulai_magang ? $this->selectedDetail->tanggal_mulai_magang->format('d M Y') : '-' }}</span>
+                        </div>
+                        <div>
+                            <span style="display: block; font-size: 0.75rem; color: #6b7280; margin-bottom: 0.25rem;">Selesai Magang</span>
+                            <span style="font-size: 0.875rem; font-weight: 500; color: #111827;">{{ $this->selectedDetail->tanggal_selesai_magang ? $this->selectedDetail->tanggal_selesai_magang->format('d M Y') : '-' }}</span>
+                        </div>
+                    </div>
+
+                    @if(!empty($this->selectedDetail->dokumen_required))
+                        <div>
+                            <h4 style="font-size: 0.875rem; font-weight: 600; color: #374151; margin: 0 0 0.5rem 0;">Dokumen Wajib Upload</h4>
+                            <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.875rem; color: #4b5563;">
+                                @foreach($this->selectedDetail->dokumen_required as $dok)
+                                    <li>{{ \App\Models\DokumenPendaftaran::jenisOptions()[$dok] ?? strtoupper(str_replace('_', ' ', $dok)) }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                </div>
+
+                {{-- Modal Footer --}}
+                <div style="padding: 1.25rem; border-top: 1px solid #f3f4f6; display: flex; justify-content: flex-end; gap: 0.75rem; background: #f9fafb;">
+                    <x-filament::button color="gray" wire:click="closeDetail" outlined>
+                        Tutup
+                    </x-filament::button>
+                    @if(!$this->selectedDetail->isFull())
+                        <x-filament::button wire:click="daftarLowongan({{ $this->selectedDetail->id }})">
+                            Daftar Sekarang
+                        </x-filament::button>
+                    @endif
+                </div>
+            </div>
+        </div>
     @endif
+
 </x-filament-panels::page>

@@ -12,14 +12,15 @@ return new class extends Migration
             $table->id();
             $table->foreignId('pendaftaran_id')->constrained('pendaftaran_magang')->cascadeOnDelete();
             $table->enum('jenis_dokumen', [
-                'krs',
-                'transkip_nilai',
-                'cv',
-                'surat_lamaran',
+                'khs',
                 'proposal_magang',
-                'sertifikat_kompetensi',
-                'loa_perusahaan',
+                'cv',
+                'surat_izin_ortu',
+                'surat_pengantar',
+                'surat_integritas',
+                'surat_lamaran',
                 'surat_rekomendasi',
+                'sertifikasi_kompetensi',
             ]);
             $table->string('file_path', 255);
             $table->enum('status', ['menunggu', 'disetujui', 'ditolak'])->default('menunggu');
