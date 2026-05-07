@@ -113,11 +113,6 @@
                    style="border-color:#003B7A; color:#003B7A; background-color:rgba(0,59,122,0.06);">  
                     Masuk  
                 </a>  
-                <a href=""  
-                   class="px-5 py-2 text-sm font-semibold rounded-lg transition-all hover:opacity-90 pjs"  
-                   style="background-color:#F5A623; color:#7A4500;">  
-                    Daftar Sekarang  
-                </a>  
             @endauth  
         </div>  
     </div>  
@@ -164,15 +159,10 @@
   
             <div data-design-id="hero-cta-group" class="flex items-center gap-4">  
                 <a data-design-id="hero-cta-primary"  
-                   href=" }}"  
+                   href="{{ route('login') }}"  
                    class="px-8 py-3.5 rounded-xl font-bold text-sm transition-all hover:opacity-90 shadow-lg pjs"  
                    style="background-color:#F5A623; color:#7A4500;">  
-                    Daftar Sebagai Mahasiswa  
-                </a>  
-                <a data-design-id="hero-cta-secondary"  
-                   href="{{ route('login') }}"  
-                   class="px-8 py-3.5 rounded-xl font-bold text-sm border-2 border-white text-white hover:bg-white hover:text-gray-900 transition-all pjs">  
-                    Sudah Punya Akun?  
+                    Masuk ke Sistem  
                 </a>  
             </div>  
   
@@ -722,18 +712,14 @@
             Siap Mulai Perjalanan Magangmu?  
         </h2>  
         <p class="text-blue-200 text-lg mb-8 max-w-2xl mx-auto">  
-            Daftarkan akun sekarang dan kelola seluruh proses magang dengan lebih mudah, terstruktur, dan transparan bersama SiMagang JTI Polinema.  
+            Kelola seluruh proses magang dengan lebih mudah, terstruktur, dan transparan bersama SiMagang JTI Polinema.  
         </p>  
   
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">  
-            <a href=" }}"  
+            <a href="{{ route('login') }}"  
                class="px-8 py-4 rounded-xl font-bold text-sm hover:opacity-90 shadow-lg pjs w-full sm:w-auto text-center"  
                style="background-color:#F5A623; color:#7A4500;">  
-                Daftar Sekarang — Gratis  
-            </a>  
-            <a href="{{ route('login') }}"  
-               class="px-8 py-4 rounded-xl font-bold text-sm border-2 border-white text-white hover:bg-white hover:text-gray-900 transition-all pjs w-full sm:w-auto text-center">  
-                Sudah Punya Akun? Masuk  
+                Masuk ke Sistem  
             </a>  
         </div>  
   

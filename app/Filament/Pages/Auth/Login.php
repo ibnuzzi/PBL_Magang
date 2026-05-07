@@ -36,7 +36,6 @@ class Login extends BaseLogin
     {
         return TextInput::make('password')
             ->label('Password')
-            ->hint(new HtmlString('<a href="/lupa-password" style="color:#F5A623; font-weight:600; text-decoration:none; font-size:0.75rem;">Lupa Password?</a>'))
             ->password()
             ->revealable(filament()->arePasswordsRevealable())
             ->autocomplete('current-password')

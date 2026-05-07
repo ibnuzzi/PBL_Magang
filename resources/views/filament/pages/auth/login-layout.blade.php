@@ -192,11 +192,6 @@
                style="padding:0.5rem 1.25rem; font-size:0.875rem; font-weight:600; border-radius:0.5rem; border:2px solid #003B7A; color:#003B7A; background:rgba(0,59,122,0.06); text-decoration:none; transition:all 0.2s;">
                 Masuk
             </a>
-            <a href="#"
-               class="pjs"
-               style="padding:0.5rem 1.25rem; font-size:0.875rem; font-weight:600; border-radius:0.5rem; background:#F5A623; color:#7A4500; text-decoration:none; transition:opacity 0.2s;">
-                Daftar Sekarang
-            </a>
         </div>
     </div>
 </header>
@@ -318,16 +313,7 @@
             {{-- Filament Form Content (slot) --}}
             {{ $slot }}
 
-            {{-- Divider --}}
-            <p style="text-align:center; font-size:0.75rem; color:#9CA3AF; margin:0.75rem 0;">Belum punya akun?</p>
 
-            {{-- Register --}}
-            <a href="#" style="width:100%; padding:0.75rem; border:1.5px solid #E2E8F0; border-radius:0.6rem; font-size:0.875rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:0.5rem; text-decoration:none; color:#374151; font-family:'Plus Jakarta Sans',sans-serif; transition:all 0.2s;">
-                <svg style="width:1rem; height:1rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-                </svg>
-                Daftar Akun Mahasiswa Baru
-            </a>
 
             {{-- Bottom Status --}}
             <div style="display:flex; align-items:center; justify-content:center; gap:1rem; margin-top:1rem; padding-top:0.75rem; border-top:1px solid #F1F5F9;">
