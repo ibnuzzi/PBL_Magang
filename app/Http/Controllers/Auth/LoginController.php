@@ -14,7 +14,7 @@ class LoginController extends Controller
     public function showLoginForm()
     {
         if (Auth::check()) {
-            return redirect('/admin');
+            return $this->redirectBasedOnRole(Auth::user());
         }
 
         return view('auth.login');
@@ -34,14 +34,12 @@ class LoginController extends Controller
         $password = $request->input('password');
         $remember = $request->boolean('remember');
 
-        // Try login with email, nim, or nip
         $credentials = ['password' => $password];
 
+        // Detect login type (email / nim / nip)
         if (filter_var($loginField, FILTER_VALIDATE_EMAIL)) {
             $credentials['email'] = $loginField;
         } elseif (preg_match('/^\d{10,}$/', $loginField)) {
-            // Could be NIM or NIP based on length
-            // Try NIM first (shorter), then NIP
             if (strlen($loginField) <= 15) {
                 $credentials['nim'] = $loginField;
             } else {
@@ -51,12 +49,13 @@ class LoginController extends Controller
             $credentials['email'] = $loginField;
         }
 
+        // Attempt login
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
 
             $user = Auth::user();
 
-            // Check if user is active
+            // cek aktif
             if (!$user->is_active) {
                 Auth::logout();
                 return back()->withErrors([
@@ -64,33 +63,48 @@ class LoginController extends Controller
                 ])->withInput($request->only('email'));
             }
 
-            return redirect()->intended('/admin');
+            // redirect sesuai role
+            return $this->redirectBasedOnRole($user);
         }
 
-        // If NIM/NIP attempt failed, try the other field
+        // fallback: coba nim <-> nip
         if (isset($credentials['nim'])) {
             unset($credentials['nim']);
             $credentials['nip'] = $loginField;
-            if (Auth::attempt($credentials, $remember)) {
-                $request->session()->regenerate();
-                return redirect()->intended('/admin');
-            }
         } elseif (isset($credentials['nip'])) {
             unset($credentials['nip']);
             $credentials['nim'] = $loginField;
-            if (Auth::attempt($credentials, $remember)) {
-                $request->session()->regenerate();
-                return redirect()->intended('/admin');
-            }
         }
 
+        if (Auth::attempt($credentials, $remember)) {
+            $request->session()->regenerate();
+            return $this->redirectBasedOnRole(Auth::user());
+        }
+
+        // gagal login
         return back()->withErrors([
             'email' => 'NIM/NIP/Email atau password yang Anda masukkan salah.',
         ])->withInput($request->only('email'));
     }
 
     /**
-     * Show the forgot password form.
+     * Redirect berdasarkan role
+     */
+    private function redirectBasedOnRole($user)
+    {
+        if ($user->role === 'admin') {
+            return redirect('/admin');
+        } elseif ($user->role === 'mahasiswa') {
+            return redirect('/mahasiswa');
+        } elseif ($user->role === 'dosen') {
+            return redirect('/dosen');
+        } else {
+            return redirect('/');
+        }
+    }
+
+    /**
+     * Show forgot password
      */
     public function showForgotPasswordForm()
     {
