@@ -193,11 +193,6 @@
                style="border-color:#003B7A; color:#003B7A; background-color:rgba(0,59,122,0.06);">
                 Masuk
             </a>
-            <a href="#"
-               class="px-5 py-2 text-sm font-semibold rounded-lg transition-all hover:opacity-90 pjs"
-               style="background-color:#F5A623; color:#7A4500;">
-                Daftar Sekarang
-            </a>
         </div>
     </div>
 </header>
