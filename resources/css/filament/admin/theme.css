@@ -1,0 +1,41 @@
+/* Custom Sidebar Styles */
+.fi-sidebar {
+    background: linear-gradient(180deg, #003870 0%, #002D5A 100%) !important;
+}
+
+.fi-sidebar-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.fi-sidebar-nav-label {
+    color: rgba(255, 255, 255, 0.5) !important;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.fi-sidebar-item-button {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.fi-sidebar-item-button:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.fi-sidebar-item-active .fi-sidebar-item-button {
+    background-color: #F59E0B !important; /* Amber-500 */
+    color: white !important;
+    border-radius: 12px !important;
+}
+
+.fi-sidebar-group {
+    padding-top: 1rem !important;
+}
+
+/* Card Styles */
+.fi-section, .fi-wi-stats-overview-stat-wrapper {
+    border-radius: 20px !important;
+    border: none !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+}

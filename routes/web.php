@@ -11,25 +11,22 @@ Route::patch('/koordinator/{id}/status', [KoordinatorController::class, 'updateS
 Route::resource('koordinator', KoordinatorController::class);
 
 Route::prefix('koordinator')->name('koordinator.')->group(function () {
-    Route::resource('dashboard', \App\Http\Controllers\Koordinator\DashboardController::class);
-    Route::resource('verifikasi', \App\Http\Controllers\Koordinator\VerifikasiController::class);
-    Route::resource('pendaftaran', \App\Http\Controllers\Koordinator\PendaftaranController::class);
-    Route::resource('perusahaan', \App\Http\Controllers\Koordinator\PerusahaanController::class);
-    Route::resource('logbook', \App\Http\Controllers\Koordinator\LogbookController::class);
-    Route::resource('penilaian', \App\Http\Controllers\Koordinator\PenilaianController::class);
-    Route::resource('laporan', \App\Http\Controllers\Koordinator\LaporanController::class);
-    Route::resource('pengaturan', \App\Http\Controllers\Koordinator\PengaturanController::class);
+    // Route::resource('dashboard', \App\Http\Controllers\Koordinator\DashboardController::class);
+    // Route::resource('verifikasi', \App\Http\Controllers\Koordinator\VerifikasiController::class);
+    // Route::resource('pendaftaran', \App\Http\Controllers\Koordinator\PendaftaranController::class);
+    // Route::resource('perusahaan', \App\Http\Controllers\Koordinator\PerusahaanController::class);
+    // Route::resource('logbook', \App\Http\Controllers\Koordinator\LogbookController::class);
+    // Route::resource('penilaian', \App\Http\Controllers\Koordinator\PenilaianController::class);
+    // Route::resource('laporan', \App\Http\Controllers\Koordinator\LaporanController::class);
+    // Route::resource('pengaturan', \App\Http\Controllers\Koordinator\PengaturanController::class);
 });
 
 Route::prefix('admin')->name('admin.')->group(function () {
-    Route::resource('dashboard', \App\Http\Controllers\Mahasiswa\AdminController::class);
-    Route::put('dashboard/parameter/{id}', [\App\Http\Controllers\Mahasiswa\AdminController::class, 'updateParameter'])->name('dashboard.parameter.update');
-    Route::resource('users', \App\Http\Controllers\Mahasiswa\UserController::class);
 });
 
 Route::prefix('mahasiswa')->name('mahasiswa.')->group(function () {
     Route::resource('dashboard', \App\Http\Controllers\Mahasiswa\DashboardController::class);
-    Route::resource('logbook', \App\Http\Controllers\Mahasiswa\LogbookController::class);
+    // Route::resource('logbook', \App\Http\Controllers\Mahasiswa\LogbookController::class);
 });
 
 Route::get('/login', function () {
