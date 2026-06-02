@@ -40,37 +40,7 @@
         width: 100%;
         max-width: 420px;
     }
-    .role-tabs {
-        display: flex;
-        gap: 0;
-        background: #F1F5F9;
-        border-radius: 0.75rem;
-        padding: 4px;
-        margin-bottom: 1.5rem;
-    }
-    .role-tab {
-        flex: 1;
-        text-align: center;
-        padding: 0.5rem 0.25rem;
-        font-size: 0.8rem;
-        font-weight: 600;
-        border-radius: 0.6rem;
-        cursor: pointer;
-        transition: all 0.25s ease;
-        color: #64748B;
-        border: none;
-        background: transparent;
-        font-family: 'Plus Jakarta Sans', sans-serif;
-    }
-    .role-tab.active {
-        background: #003B7A;
-        color: #fff;
-        box-shadow: 0 2px 8px rgba(0,59,122,0.25);
-    }
-    .role-tab:not(.active):hover {
-        color: #003B7A;
-        background: rgba(0,59,122,0.06);
-    }
+
     .feature-item {
         display: flex;
         align-items: flex-start;
@@ -301,14 +271,7 @@
                 Masuk ke akun Anda untuk mengelola kegiatan magang.
             </p>
 
-            {{-- Role Tabs --}}
-            <p class="pjs" style="font-size:0.7rem; font-weight:600; color:#6B7280; margin-bottom:0.5rem; letter-spacing:0.05em;">MASUK SEBAGAI</p>
-            <div class="role-tabs" id="roleTabs">
-                <button type="button" class="role-tab active" data-role="mahasiswa">Mahasiswa</button>
-                <button type="button" class="role-tab" data-role="dosen">Dosen</button>
-                <button type="button" class="role-tab" data-role="koordinator">Koordinator</button>
-                <button type="button" class="role-tab" data-role="admin">Admin</button>
-            </div>
+
 
             {{-- Filament Form Content (slot) --}}
             {{ $slot }}
@@ -335,13 +298,6 @@
     </div>
 </div>
 
-<script>
-    document.querySelectorAll('.role-tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-            document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-        });
-    });
-</script>
+
 
 </x-filament-panels::layout.base>

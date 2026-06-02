@@ -21,8 +21,8 @@ class Login extends BaseLogin
     protected function getEmailFormComponent(): Component
     {
         return TextInput::make('email')
-            ->label('NIM / Email')
-            ->placeholder('Masukkan NIM atau Email')
+            ->label('NIM / NIP / Email')
+            ->placeholder('Masukkan NIM, NIP, atau Email')
             ->required()
             ->autocomplete()
             ->autofocus()
@@ -86,8 +86,10 @@ class Login extends BaseLogin
                 if ($authGuard->attempt($credentials, $data['remember'] ?? false)) {
                     $user = $authGuard->user();
 
-                    if ($user instanceof \Filament\Models\Contracts\FilamentUser &&
-                        !$user->canAccessPanel(\Filament\Facades\Filament::getCurrentOrDefaultPanel())) {
+                    if (
+                        $user instanceof \Filament\Models\Contracts\FilamentUser &&
+                        !$user->canAccessPanel(\Filament\Facades\Filament::getCurrentOrDefaultPanel())
+                    ) {
                         $authGuard->logout();
                         throw $e;
                     }

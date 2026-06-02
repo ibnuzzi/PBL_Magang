@@ -36,37 +36,7 @@
         width: 100%;
         max-width: 420px;
     }
-    .role-tabs {
-        display: flex;
-        gap: 0;
-        background: #F1F5F9;
-        border-radius: 0.75rem;
-        padding: 4px;
-        margin-bottom: 1.5rem;
-    }
-    .role-tab {
-        flex: 1;
-        text-align: center;
-        padding: 0.5rem 0.25rem;
-        font-size: 0.8rem;
-        font-weight: 600;
-        border-radius: 0.6rem;
-        cursor: pointer;
-        transition: all 0.25s ease;
-        color: #64748B;
-        border: none;
-        background: transparent;
-        font-family: 'Plus Jakarta Sans', sans-serif;
-    }
-    .role-tab.active {
-        background: #003B7A;
-        color: #fff;
-        box-shadow: 0 2px 8px rgba(0,59,122,0.25);
-    }
-    .role-tab:not(.active):hover {
-        color: #003B7A;
-        background: rgba(0,59,122,0.06);
-    }
+
     .login-input {
         width: 100%;
         padding: 0.7rem 1rem;
@@ -296,14 +266,7 @@
                 Masuk ke akun Anda untuk mengelola kegiatan magang.
             </p>
 
-            {{-- Role Tabs --}}
-            <p class="text-xs font-semibold text-gray-500 mb-2 pjs">MASUK SEBAGAI</p>
-            <div class="role-tabs" id="roleTabs">
-                <button type="button" class="role-tab active" data-role="mahasiswa" data-guard="admin">Mahasiswa</button>
-                <button type="button" class="role-tab" data-role="dosen" data-guard="admin">Dosen</button>
-                <button type="button" class="role-tab" data-role="koordinator" data-guard="admin">Koordinator</button>
-                <button type="button" class="role-tab" data-role="admin" data-guard="admin">Admin</button>
-            </div>
+
 
             {{-- Form --}}
             <form method="POST" action="{{ route('login.post') }}" id="loginForm">
@@ -311,12 +274,12 @@
 
                 {{-- NIM / Email --}}
                 <div class="mb-3">
-                    <label class="block text-xs font-semibold text-gray-600 mb-1 pjs">NIM / Email</label>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1 pjs">NIM / NIP / Email</label>
                     <input type="text" name="email" id="loginEmail"
-                           class="login-input" placeholder="Masukkan NIM atau Email"
+                           class="login-input" placeholder="Masukkan NIM, NIP, atau Email"
                            value="{{ old('email') }}" required>
                     <p class="text-gray-400 text-xs mt-1" id="loginHint">
-                        Contoh: 2341720203 atau nama@students.polinema.ac.id
+                        Contoh: NIM (224176...), NIP (199103...), atau Email
                     </p>
                     @error('email')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -385,32 +348,4 @@
 
 @endsection
 
-@push('scripts')
-<script>
-    // Role tab switching
-    document.querySelectorAll('.role-tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-            document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
 
-            const role = this.dataset.role;
-            const emailInput = document.getElementById('loginEmail');
-            const hint = document.getElementById('loginHint');
-
-            if (role === 'mahasiswa') {
-                emailInput.placeholder = 'Masukkan NIM atau Email';
-                hint.textContent = 'Contoh: 2341720203 atau nama@students.polinema.ac.id';
-            } else if (role === 'dosen') {
-                emailInput.placeholder = 'Masukkan NIP atau Email';
-                hint.textContent = 'Contoh: 198501012020031001 atau nama@polinema.ac.id';
-            } else if (role === 'koordinator') {
-                emailInput.placeholder = 'Masukkan NIP atau Email';
-                hint.textContent = 'Gunakan NIP atau email koordinator Anda';
-            } else {
-                emailInput.placeholder = 'Masukkan Email Admin';
-                hint.textContent = 'Gunakan email admin yang terdaftar';
-            }
-        });
-    });
-</script>
-@endpush
