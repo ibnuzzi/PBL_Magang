@@ -61,16 +61,13 @@ class DaftarMagang extends Page implements HasForms
     {
         $user = Auth::user();
 
-        // Cek apakah sudah punya pendaftaran mandiri aktif
-        $existing = PendaftaranMagang::where('mahasiswa_id', $user->id)
-            ->where('jenis_magang', 'mandiri')
-            ->whereNotIn('status', [PendaftaranMagang::STATUS_DITOLAK, PendaftaranMagang::STATUS_DIBATALKAN, PendaftaranMagang::STATUS_SELESAI])
-            ->exists();
-
-        if ($existing) {
+        // Cek status_magang — hanya bisa daftar jika tidak_aktif atau ditolak
+        if (!$user->canApplyMagang()) {
             Notification::make()
-                ->title('Anda sudah memiliki pendaftaran mandiri yang aktif')
-                ->warning()
+                ->title('Tidak dapat mendaftar')
+                ->body('Status magang Anda saat ini: "' . $user->status_magang_label . '". ' . $user->status_magang_keterangan)
+                ->danger()
+                ->duration(8000)
                 ->send();
             return;
         }

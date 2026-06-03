@@ -75,6 +75,17 @@ class BrowseLowongan extends Page
         $lowongan = LowonganMagang::findOrFail($lowonganId);
         $user = auth()->user();
 
+        // Cek status_magang — hanya bisa daftar jika tidak_aktif atau ditolak
+        if (!$user->canApplyMagang()) {
+            Notification::make()
+                ->title('Tidak dapat mendaftar')
+                ->body('Status magang Anda saat ini: "' . $user->status_magang_label . '". ' . $user->status_magang_keterangan)
+                ->danger()
+                ->duration(8000)
+                ->send();
+            return;
+        }
+
         // Cek apakah sudah pernah daftar ke lowongan ini
         $existing = PendaftaranMagang::where('mahasiswa_id', $user->id)
             ->where('lowongan_id', $lowonganId)

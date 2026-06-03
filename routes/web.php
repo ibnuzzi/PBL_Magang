@@ -7,5 +7,5 @@ Route::get('/', function () {
 });
 
 Route::get('/login', function () {
-    return redirect('/admin/login');
+    return redirect('/mahasiswa/login');
 })->name('login');

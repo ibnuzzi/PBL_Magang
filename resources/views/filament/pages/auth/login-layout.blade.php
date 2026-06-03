@@ -267,11 +267,16 @@
             <h2 class="pjs" style="font-size:1.5rem; font-weight:800; text-align:center; margin:0 0 0.25rem 0; color:#003B7A;">
                 Selamat Datang Kembali
             </h2>
-            <p style="color:#9CA3AF; font-size:0.75rem; text-align:center; margin-bottom:1.25rem; line-height:1.5;">
+            <p style="color:#9CA3AF; font-size:0.75rem; text-align:center; margin-bottom:1rem; line-height:1.5;">
                 Masuk ke akun Anda untuk mengelola kegiatan magang.
             </p>
 
-
+            {{-- Logo JTI --}}
+            <div style="text-align:center; margin-bottom:1.25rem;">
+                <div style="display:inline-flex; align-items:center; justify-content:center; width:88px; height:88px; border-radius:1rem; background:#F8FAFC; box-shadow:0 2px 12px rgba(0,43,86,0.10), 0 1px 3px rgba(0,0,0,0.06); border:1px solid #E2E8F0;">
+                    <img src="{{ asset('images/logo-jti.png') }}" alt="Logo JTI Polinema" style="width:60px; height:auto;">
+                </div>
+            </div>
 
             {{-- Filament Form Content (slot) --}}
             {{ $slot }}

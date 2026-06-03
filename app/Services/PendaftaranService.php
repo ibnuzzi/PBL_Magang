@@ -24,7 +24,7 @@ class PendaftaranService
      */
     public function createDraftPilihan(User $mahasiswa, LowonganMagang $lowongan): PendaftaranMagang
     {
-        return PendaftaranMagang::create([
+        $pendaftaran = PendaftaranMagang::create([
             'mahasiswa_id' => $mahasiswa->id,
             'lowongan_id' => $lowongan->id,
             'mitra_id' => $lowongan->mitra_id,
@@ -32,6 +32,11 @@ class PendaftaranService
             'status' => PendaftaranMagang::STATUS_DRAFT,
             'tanggal_daftar' => now(),
         ]);
+
+        // Update status magang mahasiswa → proses
+        $mahasiswa->update(['status_magang' => User::STATUS_MAGANG_PROSES]);
+
+        return $pendaftaran;
     }
 
     /**
@@ -39,7 +44,7 @@ class PendaftaranService
      */
     public function createDraftMandiri(User $mahasiswa, int $mitraId): PendaftaranMagang
     {
-        return PendaftaranMagang::create([
+        $pendaftaran = PendaftaranMagang::create([
             'mahasiswa_id' => $mahasiswa->id,
             'lowongan_id' => null,
             'mitra_id' => $mitraId,
@@ -47,6 +52,11 @@ class PendaftaranService
             'status' => PendaftaranMagang::STATUS_DRAFT,
             'tanggal_daftar' => now(),
         ]);
+
+        // Update status magang mahasiswa → proses
+        $mahasiswa->update(['status_magang' => User::STATUS_MAGANG_PROSES]);
+
+        return $pendaftaran;
     }
 
     /**
@@ -62,6 +72,9 @@ class PendaftaranService
         $pendaftaran->update([
             'status' => PendaftaranMagang::STATUS_MENUNGGU_VERIFIKASI,
         ]);
+
+        // Pastikan status magang tetap proses
+        $pendaftaran->mahasiswa->update(['status_magang' => User::STATUS_MAGANG_PROSES]);
 
         // Kirim notifikasi ke koordinator
         $this->notifikasiService->notifyPendaftaranSubmitted($pendaftaran);
@@ -139,6 +152,10 @@ class PendaftaranService
                     'status' => PendaftaranMagang::STATUS_DITOLAK,
                     'alasan_ditolak' => $catatan,
                 ]);
+
+                // Update status magang mahasiswa → ditolak
+                $pendaftaran->mahasiswa->update(['status_magang' => User::STATUS_MAGANG_DITOLAK]);
+
                 $this->notifikasiService->notifyPendaftaranDitolak($pendaftaran, $catatan ?? 'Tidak ada alasan');
             }
 
@@ -160,10 +177,15 @@ class PendaftaranService
 
     /**
      * Update status LOA diterima.
+     * Ini adalah trigger utama untuk status_magang → diterima.
      */
     public function loaDiterima(PendaftaranMagang $pendaftaran): PendaftaranMagang
     {
         $pendaftaran->update(['status' => PendaftaranMagang::STATUS_LOA]);
+
+        // Update status magang mahasiswa → diterima (LOA sudah divalidasi koordinator)
+        $pendaftaran->mahasiswa->update(['status_magang' => User::STATUS_MAGANG_DITERIMA]);
+
         $this->notifikasiService->notifyStatusChange($pendaftaran);
         return $pendaftaran->fresh();
     }
@@ -193,6 +215,10 @@ class PendaftaranService
             'status' => PendaftaranMagang::STATUS_DIBATALKAN,
             'catatan' => $alasan,
         ]);
+
+        // Kembalikan status magang mahasiswa → tidak_aktif (bisa apply lagi)
+        $pendaftaran->mahasiswa->update(['status_magang' => User::STATUS_MAGANG_TIDAK_AKTIF]);
+
         $this->notifikasiService->notifyStatusChange($pendaftaran);
         return $pendaftaran->fresh();
     }

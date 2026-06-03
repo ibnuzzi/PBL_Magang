@@ -1,9 +1,65 @@
 <x-filament-panels::page>
     <div style="max-width: 48rem; margin: 0 auto;">
+        {{-- Status Magang Banner --}}
+        @php $user = auth()->user(); @endphp
+        @if(!$user->canApplyMagang())
+            <div style="margin-bottom: 1.5rem; border-radius: 0.75rem; overflow: hidden;
+                border: 1px solid {{ $user->isMagangDiterima() ? '#bbf7d0' : ($user->isMagangProses() ? '#fde68a' : '#fecaca') }};
+                background: {{ $user->isMagangDiterima() ? '#f0fdf4' : ($user->isMagangProses() ? '#fffbeb' : '#fef2f2') }};">
+                <div style="padding: 1rem 1.25rem; display: flex; align-items: flex-start; gap: 0.75rem;">
+                    <div style="flex-shrink: 0; margin-top: 2px;">
+                        @if($user->isMagangDiterima())
+                            <x-filament::icon icon="heroicon-s-check-circle" style="width: 24px; height: 24px; color: #16a34a;" />
+                        @elseif($user->isMagangProses())
+                            <x-filament::icon icon="heroicon-s-clock" style="width: 24px; height: 24px; color: #d97706;" />
+                        @else
+                            <x-filament::icon icon="heroicon-s-x-circle" style="width: 24px; height: 24px; color: #dc2626;" />
+                        @endif
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.375rem; flex-wrap: wrap;">
+                            <h4 style="margin: 0; font-size: 0.9375rem; font-weight: 600;
+                                color: {{ $user->isMagangDiterima() ? '#166534' : ($user->isMagangProses() ? '#92400e' : '#991b1b') }};">
+                                @if($user->isMagangDiterima())
+                                    ✅ Diterima / MBKM
+                                @elseif($user->isMagangProses())
+                                    ⏳ Proses Pendaftaran
+                                @else
+                                    Status: {{ $user->status_magang_label }}
+                                @endif
+                            </h4>
+                            <x-filament::badge :color="$user->status_magang_color">
+                                {{ $user->status_magang_label }}
+                            </x-filament::badge>
+                        </div>
+                        <p style="margin: 0 0 0.5rem 0; font-size: 0.875rem; line-height: 1.5;
+                            color: {{ $user->isMagangDiterima() ? '#15803d' : ($user->isMagangProses() ? '#a16207' : '#b91c1c') }};">
+                            {{ $user->status_magang_keterangan }}
+                        </p>
+                        <a href="{{ \App\Filament\Pages\Mahasiswa\StatusPendaftaran::getUrl() }}"
+                           style="font-size: 0.875rem; font-weight: 600; color: #003B7A; text-decoration: none;">
+                            Lihat Detail Pendaftaran →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <x-filament::section>
             <x-slot name="heading">Pendaftaran Magang Mandiri</x-slot>
             <x-slot name="description">Untuk magang mandiri, Anda perlu memilih mitra perusahaan yang sudah ada di sistem atau mendaftarkan mitra baru.</x-slot>
 
+            @if(!$user->canApplyMagang())
+                <div style="text-align: center; padding: 2rem 1rem;">
+                    <div style="display: flex; justify-content: center; margin-bottom: 0.75rem; color: #9ca3af;">
+                        <x-filament::icon icon="heroicon-o-lock-closed" style="width: 48px; height: 48px;" />
+                    </div>
+                    <h3 style="font-size: 0.9375rem; font-weight: 600; color: #6b7280; margin: 0;">Pendaftaran Tidak Tersedia</h3>
+                    <p style="font-size: 0.875rem; color: #9ca3af; margin-top: 0.25rem;">
+                        {{ $user->status_magang_keterangan }}
+                    </p>
+                </div>
+            @else
             <form wire:submit="submitMandiri">
                 {{-- Pilih jenis mitra --}}
                 <div style="margin-bottom: 1.5rem;">
@@ -99,6 +155,7 @@
                     </x-filament::button>
                 </div>
             </form>
+            @endif
         </x-filament::section>
     </div>
 </x-filament-panels::page>

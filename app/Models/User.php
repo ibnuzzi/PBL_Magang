@@ -4,14 +4,16 @@ namespace App\Models;
 
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser, HasAvatar
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -25,6 +27,7 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'nim',
         'nip',
+        'nidn',
         'email',
         'password',
         'role',
@@ -34,8 +37,19 @@ class User extends Authenticatable implements FilamentUser
         'program_studi_id',
         'no_hp',
         'foto',
+        'cv_link',
+        'khs_link',
+        'kompetensi',
         'is_active',
+        'status_magang',
     ];
+
+    // ─── Status Magang Constants ─────────────────────────────────────
+
+    public const STATUS_MAGANG_TIDAK_AKTIF = 'tidak_aktif';
+    public const STATUS_MAGANG_PROSES = 'proses';
+    public const STATUS_MAGANG_DITERIMA = 'diterima';
+    public const STATUS_MAGANG_DITOLAK = 'ditolak';
 
     /**
      * The attributes that should be hidden for serialization.
@@ -68,6 +82,18 @@ class User extends Authenticatable implements FilamentUser
     public function canAccessPanel(Panel $panel): bool
     {
         return $this->is_active;
+    }
+
+    /**
+     * Get the avatar URL for the Filament navbar.
+     */
+    public function getFilamentAvatarUrl(): ?string
+    {
+        if ($this->foto) {
+            return '/storage/' . $this->foto;
+        }
+
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=random';
     }
 
     // ─── Relationships ───────────────────────────────────────────────
@@ -168,5 +194,77 @@ class User extends Authenticatable implements FilamentUser
     public function getUnreadNotifikasiCountAttribute(): int
     {
         return $this->notifikasi()->where('is_read', false)->count();
+    }
+
+    // ─── Status Magang Helpers ───────────────────────────────────────
+
+    /**
+     * Label untuk status_magang (human-readable).
+     */
+    public static function statusMagangOptions(): array
+    {
+        return [
+            self::STATUS_MAGANG_TIDAK_AKTIF => 'Tidak Aktif',
+            self::STATUS_MAGANG_PROSES => 'Proses Pendaftaran',
+            self::STATUS_MAGANG_DITERIMA => 'Diterima / MBKM',
+            self::STATUS_MAGANG_DITOLAK => 'Ditolak',
+        ];
+    }
+
+    public function getStatusMagangLabelAttribute(): string
+    {
+        return self::statusMagangOptions()[$this->status_magang] ?? 'Tidak Aktif';
+    }
+
+    public function getStatusMagangColorAttribute(): string
+    {
+        return match ($this->status_magang) {
+            self::STATUS_MAGANG_TIDAK_AKTIF => 'gray',
+            self::STATUS_MAGANG_PROSES => 'warning',
+            self::STATUS_MAGANG_DITERIMA => 'success',
+            self::STATUS_MAGANG_DITOLAK => 'danger',
+            default => 'gray',
+        };
+    }
+
+    /**
+     * Keterangan lengkap per status magang.
+     */
+    public function getStatusMagangKeteranganAttribute(): string
+    {
+        return match ($this->status_magang) {
+            self::STATUS_MAGANG_TIDAK_AKTIF => 'Anda belum mendaftar magang. Silakan browse lowongan atau daftar mandiri.',
+            self::STATUS_MAGANG_PROSES => 'Pendaftaran Anda sedang diproses. Anda tidak dapat mendaftar ke tempat lain selama proses ini berlangsung.',
+            self::STATUS_MAGANG_DITERIMA => 'Selamat! Anda telah diterima magang. LOA sudah divalidasi oleh Koordinator Magang.',
+            self::STATUS_MAGANG_DITOLAK => 'Pendaftaran Anda ditolak. Anda dapat mendaftar ulang ke tempat lain.',
+            default => '',
+        };
+    }
+
+    /**
+     * Cek apakah mahasiswa boleh apply magang baru.
+     */
+    public function canApplyMagang(): bool
+    {
+        return in_array($this->status_magang, [
+            self::STATUS_MAGANG_TIDAK_AKTIF,
+            self::STATUS_MAGANG_DITOLAK,
+        ]);
+    }
+
+    /**
+     * Cek apakah mahasiswa sedang dalam proses pendaftaran.
+     */
+    public function isMagangProses(): bool
+    {
+        return $this->status_magang === self::STATUS_MAGANG_PROSES;
+    }
+
+    /**
+     * Cek apakah mahasiswa sudah diterima magang.
+     */
+    public function isMagangDiterima(): bool
+    {
+        return $this->status_magang === self::STATUS_MAGANG_DITERIMA;
     }
 }

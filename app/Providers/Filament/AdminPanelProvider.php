@@ -23,9 +23,10 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
-            ->id('admin')
-            ->path('admin')
+            ->id('mahasiswa')
+            ->path('mahasiswa')
             ->login(\App\Filament\Pages\Auth\Login::class)
+            ->profile(\App\Filament\Pages\EditProfile::class, isSimple: false)
             ->colors([
                 'primary' => Color::Amber,
             ])
