@@ -7,6 +7,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
 
 class UserForm
@@ -75,40 +76,22 @@ class UserForm
                             ->maxLength(4)
                             ->visible(fn (callable $get) => $get('role') === 'mahasiswa'),
 
-<<<<<<< HEAD
-                        TextInput::make('ipk')
-                            ->label('IPK')
-                            ->numeric()
-                            ->inputMode('decimal')
-                            ->minValue(0.00)
-                            ->maxValue(4.00)
-                            ->visible(fn (callable $get) => $get('role') === 'mahasiswa'),
-
                         TextInput::make('semester')
                             ->label('Semester')
                             ->numeric()
                             ->integer()
-=======
-                        TextInput::make('semester')
-                            ->label('Semester')
-                            ->numeric()
->>>>>>> 150635d585532dd09f3f846e9ec0e0a8246e5232
                             ->minValue(1)
                             ->maxValue(14)
                             ->visible(fn (callable $get) => $get('role') === 'mahasiswa'),
 
-<<<<<<< HEAD
-=======
                         TextInput::make('ipk')
                             ->label('IPK')
                             ->numeric()
                             ->inputMode('decimal')
                             ->step(0.01)
-                            ->minValue(0)
-                            ->maxValue(4)
+                            ->minValue(0.00)
+                            ->maxValue(4.00)
                             ->visible(fn (callable $get) => $get('role') === 'mahasiswa'),
-
->>>>>>> 150635d585532dd09f3f846e9ec0e0a8246e5232
                         Select::make('program_studi_id')
                             ->label('Program Studi')
                             ->relationship('programStudi', 'nama')

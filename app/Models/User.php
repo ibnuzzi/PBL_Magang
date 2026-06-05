@@ -37,18 +37,15 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         'program_studi_id',
         'no_hp',
         'foto',
-<<<<<<< HEAD
         'skills',
         'pengalaman',
         'cv_path',
         'portfolio_path',
         'cv_text',
         'portfolio_text',
-=======
         'cv_link',
         'khs_link',
         'kompetensi',
->>>>>>> 150635d585532dd09f3f846e9ec0e0a8246e5232
         'is_active',
         'status_magang',
     ];

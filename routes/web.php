@@ -7,8 +7,7 @@ Route::get('/', function () {
 });
 
 Route::get('/login', function () {
-<<<<<<< HEAD
-    return redirect('/admin/login');
+    return redirect('/mahasiswa/login');
 })->name('login');
 
 // Logbook Supervisor Public Link Approval Routes
@@ -22,7 +21,3 @@ Route::get('/mahasiswa/logbook/print', [App\Http\Controllers\LogbookPrintControl
 Route::get('/surat/unduh/{suratMagang}', [App\Http\Controllers\SuratDownloadController::class, 'download'])
     ->name('surat.download')
     ->middleware('auth');
-=======
-    return redirect('/mahasiswa/login');
-})->name('login');
->>>>>>> 150635d585532dd09f3f846e9ec0e0a8246e5232

@@ -24,14 +24,10 @@ class PendaftaranService
      */
     public function createDraftPilihan(User $mahasiswa, LowonganMagang $lowongan): PendaftaranMagang
     {
-<<<<<<< HEAD
         $jenisMagang = $lowongan->jenis_magang; // pilihan or wajib
         $this->validatePendaftaran($mahasiswa, $jenisMagang, $lowongan->mitra_id);
 
-        return PendaftaranMagang::create([
-=======
         $pendaftaran = PendaftaranMagang::create([
->>>>>>> 150635d585532dd09f3f846e9ec0e0a8246e5232
             'mahasiswa_id' => $mahasiswa->id,
             'lowongan_id' => $lowongan->id,
             'mitra_id' => $lowongan->mitra_id,
@@ -51,13 +47,9 @@ class PendaftaranService
      */
     public function createDraftMandiri(User $mahasiswa, int $mitraId): PendaftaranMagang
     {
-<<<<<<< HEAD
         $this->validatePendaftaran($mahasiswa, 'mandiri', $mitraId);
 
-        return PendaftaranMagang::create([
-=======
         $pendaftaran = PendaftaranMagang::create([
->>>>>>> 150635d585532dd09f3f846e9ec0e0a8246e5232
             'mahasiswa_id' => $mahasiswa->id,
             'lowongan_id' => null,
             'mitra_id' => $mitraId,
