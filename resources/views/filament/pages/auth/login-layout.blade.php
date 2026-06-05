@@ -137,12 +137,7 @@
     <div style="max-width:80rem; margin:0 auto; padding:0.75rem 1.5rem; display:flex; align-items:center; justify-content:space-between;">
         <a href="/" style="display:flex; align-items:center; gap:0.75rem; text-decoration:none;">
             <div style="width:2.5rem; height:2.5rem; border-radius:0.5rem; display:flex; align-items:center; justify-content:center; background-color:#003B7A;">
-                <svg viewBox="0 0 40 40" fill="none" style="width:1.75rem; height:1.75rem;">
-                    <rect x="6" y="10" width="28" height="20" rx="2" fill="white" fill-opacity="0.2"/>
-                    <rect x="9" y="14" width="10" height="12" rx="1" fill="white" fill-opacity="0.8"/>
-                    <rect x="21" y="14" width="10" height="5" rx="1" fill="white"/>
-                    <rect x="21" y="21" width="10" height="5" rx="1" fill="#F5A623"/>
-                </svg>
+                <img src="{{ asset('images/logo-jti.png') }}" alt="Logo JTI" style="width:1.75rem; height:1.75rem; object-fit:contain;">
             </div>
             <div>
                 <div class="pjs" style="font-weight:800; font-size:1rem; line-height:1.2; color:#003B7A;">SiMagang JTI</div>
@@ -181,12 +176,7 @@
             {{-- Brand --}}
             <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:2rem;">
                 <div style="width:2.75rem; height:2.75rem; border-radius:0.75rem; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.15);">
-                    <svg viewBox="0 0 40 40" fill="none" style="width:1.75rem; height:1.75rem;">
-                        <rect x="6" y="10" width="28" height="20" rx="2" fill="white" fill-opacity="0.2"/>
-                        <rect x="9" y="14" width="10" height="12" rx="1" fill="white" fill-opacity="0.8"/>
-                        <rect x="21" y="14" width="10" height="5" rx="1" fill="white"/>
-                        <rect x="21" y="21" width="10" height="5" rx="1" fill="#F5A623"/>
-                    </svg>
+                    <img src="{{ asset('images/logo-jti.png') }}" alt="Logo JTI" style="width:1.75rem; height:1.75rem; object-fit:contain;">
                 </div>
                 <div>
                     <div class="pjs" style="font-weight:800; font-size:1rem; color:#fff;">SIMagang JTI</div>

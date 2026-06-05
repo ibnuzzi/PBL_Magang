@@ -74,12 +74,7 @@
             <div data-design-id="navbar-logo-icon"  
                  class="w-10 h-10 rounded-lg flex items-center justify-center"  
                  style="background-color:#003B7A;">  
-                <svg viewBox="0 0 40 40" fill="none" class="w-7 h-7">  
-                    <rect x="6" y="10" width="28" height="20" rx="2" fill="white" fill-opacity="0.2"/>  
-                    <rect x="9" y="14" width="10" height="12" rx="1" fill="white" fill-opacity="0.8"/>  
-                    <rect x="21" y="14" width="10" height="5"  rx="1" fill="white"/>  
-                    <rect x="21" y="21" width="10" height="5"  rx="1" fill="#F5A623"/>  
-                </svg>  
+                <img src="{{ asset('images/logo-jti.png') }}" alt="Logo JTI Polinema" class="w-7 h-7">
             </div>  
             <div data-design-id="navbar-logo-text-group">  
                 <div data-design-id="navbar-logo-title"  

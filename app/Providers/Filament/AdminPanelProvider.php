@@ -30,7 +30,7 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->brandName('SiMagang JTI')
+            ->brandLogo(fn () => view('filament.brand'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
@@ -42,6 +42,55 @@ class AdminPanelProvider extends PanelProvider
                 \Filament\View\PanelsRenderHook::STYLES_AFTER,
                 fn (): string => '
                     <style>
+                        /* Topbar background */
+                        .fi-topbar {
+                            background-color: #003B7A !important;
+                            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+                            border-top: 4px solid #F5A623 !important;
+                        }
+
+                        /* Topbar items */
+                        .fi-topbar .fi-breadcrumbs-item-label,
+                        .fi-topbar .fi-topbar-item-label,
+                        .fi-topbar .fi-icon-btn,
+                        .fi-topbar .fi-user-avatar {
+                            color: #ffffff !important;
+                        }
+                        .fi-topbar svg:not(.fi-dropdown-panel svg):not(.fi-input-wrp svg):not(.fi-global-search-field svg) {
+                            color: rgba(255, 255, 255, 0.8) !important;
+                        }
+                        .fi-dropdown-panel svg {
+                            color: inherit !important;
+                        }
+                        .fi-topbar .fi-icon-btn:hover {
+                            background-color: rgba(255, 255, 255, 0.1) !important;
+                        }
+
+                        /* Topbar Search (Always solid white for reliability) */
+                        .fi-topbar .fi-input-wrp,
+                        .fi-topbar .fi-global-search-field {
+                            background-color: #ffffff !important;
+                            border: 1px solid transparent !important;
+                            border-radius: 0.5rem !important;
+                            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+                        }
+                        .fi-topbar .fi-input-wrp:focus-within,
+                        .fi-topbar .fi-global-search-field:focus-within {
+                            border-color: #F5A623 !important;
+                            box-shadow: 0 0 0 1px #F5A623 !important;
+                        }
+                        .fi-topbar input {
+                            background-color: transparent !important;
+                            color: #1f2937 !important;
+                        }
+                        .fi-topbar input::placeholder {
+                            color: #9ca3af !important;
+                        }
+                        .fi-topbar .fi-input-wrp svg,
+                        .fi-topbar .fi-global-search-field svg {
+                            color: #6b7280 !important;
+                        }
+
                         /* Sidebar background */
                         .fi-sidebar {
                             background-color: #003B7A !important;
@@ -54,8 +103,11 @@ class AdminPanelProvider extends PanelProvider
                         }
                         .fi-sidebar-header {
                             border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-                            padding-top: 1rem !important;
-                            padding-bottom: 1rem !important;
+                            padding-top: 0.75rem !important;
+                            padding-bottom: 0.75rem !important;
+                            height: 4rem !important;
+                            display: flex !important;
+                            align-items: center !important;
                         }
 
                         /* Force brand/logo text to be white */
