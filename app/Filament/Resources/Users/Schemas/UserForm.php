@@ -56,13 +56,18 @@ class UserForm
                     ->schema([
                         TextInput::make('nim')
                             ->label('NIM')
-                            ->maxLength(10)
+                            ->maxLength(12)
                             ->unique(ignoreRecord: true)
                             ->visible(fn (callable $get) => $get('role') === 'mahasiswa'),
 
                         TextInput::make('nip')
                             ->label('NIP')
-                            ->maxLength(20)
+                            ->maxLength(18)
+                            ->visible(fn (callable $get) => in_array($get('role'), ['dosen', 'koordinator', 'kps', 'kajur', 'wadir1', 'admin'])),
+
+                        TextInput::make('nidn')
+                            ->label('NIDN')
+                            ->maxLength(10)
                             ->visible(fn (callable $get) => in_array($get('role'), ['dosen', 'koordinator', 'kps', 'kajur', 'wadir1', 'admin'])),
 
                         TextInput::make('angkatan')
@@ -70,6 +75,7 @@ class UserForm
                             ->maxLength(4)
                             ->visible(fn (callable $get) => $get('role') === 'mahasiswa'),
 
+<<<<<<< HEAD
                         TextInput::make('ipk')
                             ->label('IPK')
                             ->numeric()
@@ -82,10 +88,27 @@ class UserForm
                             ->label('Semester')
                             ->numeric()
                             ->integer()
+=======
+                        TextInput::make('semester')
+                            ->label('Semester')
+                            ->numeric()
+>>>>>>> 150635d585532dd09f3f846e9ec0e0a8246e5232
                             ->minValue(1)
                             ->maxValue(14)
                             ->visible(fn (callable $get) => $get('role') === 'mahasiswa'),
 
+<<<<<<< HEAD
+=======
+                        TextInput::make('ipk')
+                            ->label('IPK')
+                            ->numeric()
+                            ->inputMode('decimal')
+                            ->step(0.01)
+                            ->minValue(0)
+                            ->maxValue(4)
+                            ->visible(fn (callable $get) => $get('role') === 'mahasiswa'),
+
+>>>>>>> 150635d585532dd09f3f846e9ec0e0a8246e5232
                         Select::make('program_studi_id')
                             ->label('Program Studi')
                             ->relationship('programStudi', 'nama')
@@ -101,6 +124,7 @@ class UserForm
                         FileUpload::make('foto')
                             ->label('Foto')
                             ->image()
+                            ->disk('public')
                             ->directory('users/foto')
                             ->maxSize(2048),
 
@@ -108,6 +132,24 @@ class UserForm
                             ->label('Aktif')
                             ->default(true),
                     ]),
+                
+                Section::make('Berkas & Kompetensi (Khusus Mahasiswa)')
+                    ->columns(2)
+                    ->schema([
+                        TextInput::make('cv_link')
+                            ->label('Link CV (Google Drive)')
+                            ->url()
+                            ->maxLength(255),
+                        TextInput::make('khs_link')
+                            ->label('Link KHS (Google Drive)')
+                            ->url()
+                            ->maxLength(255),
+                        Textarea::make('kompetensi')
+                            ->label('Kompetensi / Skill')
+                            ->rows(3)
+                            ->columnSpanFull(),
+                    ])
+                    ->visible(fn (callable $get) => $get('role') === 'mahasiswa'),
             ]);
     }
 }

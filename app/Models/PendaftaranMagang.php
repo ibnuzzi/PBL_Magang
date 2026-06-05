@@ -219,4 +219,105 @@ class PendaftaranMagang extends Model
             default => ucfirst($this->jenis_magang),
         };
     }
+
+    // ─── Active Registration Check ──────────────────────────────────
+
+    /**
+     * Status-status yang dianggap "aktif" (belum final).
+     * Jika mahasiswa punya pendaftaran dengan salah satu status ini,
+     * maka tidak boleh mendaftar ke perusahaan lain.
+     */
+    public static function activeStatuses(): array
+    {
+        return [
+            self::STATUS_DRAFT,
+            self::STATUS_MENUNGGU_VERIFIKASI,
+            self::STATUS_DOKUMEN_LENGKAP,
+            self::STATUS_DOKUMEN_KURANG,
+            self::STATUS_MENUNGGU_KOORDINATOR,
+            self::STATUS_MENUNGGU_KPS,
+            self::STATUS_MENUNGGU_KAJUR,
+            self::STATUS_MENUNGGU_WADIR1,
+            self::STATUS_DISETUJUI_PENUH,
+            self::STATUS_SURAT_TERBIT,
+            self::STATUS_LOA,
+            self::STATUS_BERJALAN,
+        ];
+    }
+
+    /**
+     * Cek apakah mahasiswa memiliki pendaftaran aktif (belum selesai/ditolak/dibatalkan).
+     */
+    public static function mahasiswaHasActive(int $mahasiswaId): bool
+    {
+        return self::where('mahasiswa_id', $mahasiswaId)
+            ->whereIn('status', self::activeStatuses())
+            ->exists();
+    }
+
+    /**
+     * Ambil pendaftaran aktif milik mahasiswa (jika ada).
+     */
+    public static function getActivePendaftaran(int $mahasiswaId): ?self
+    {
+        return self::where('mahasiswa_id', $mahasiswaId)
+            ->whereIn('status', self::activeStatuses())
+            ->with(['lowongan', 'mitra'])
+            ->latest()
+            ->first();
+    }
+
+    /**
+     * Cek apakah status saat ini termasuk "menunggu" (dalam proses review).
+     */
+    public function isMenunggu(): bool
+    {
+        return in_array($this->status, [
+            self::STATUS_MENUNGGU_VERIFIKASI,
+            self::STATUS_DOKUMEN_LENGKAP,
+            self::STATUS_MENUNGGU_KOORDINATOR,
+            self::STATUS_MENUNGGU_KPS,
+            self::STATUS_MENUNGGU_KAJUR,
+            self::STATUS_MENUNGGU_WADIR1,
+        ]);
+    }
+
+    /**
+     * Cek apakah pendaftaran sudah disetujui (disetujui penuh ke atas).
+     */
+    public function isDiterima(): bool
+    {
+        return in_array($this->status, [
+            self::STATUS_DISETUJUI_PENUH,
+            self::STATUS_SURAT_TERBIT,
+            self::STATUS_LOA,
+            self::STATUS_BERJALAN,
+            self::STATUS_SELESAI,
+        ]);
+    }
+
+    /**
+     * Pesan informatif untuk mahasiswa berdasarkan status saat ini.
+     */
+    public function getStatusInfoMessage(): string
+    {
+        return match ($this->status) {
+            self::STATUS_DRAFT => 'Pendaftaran Anda masih dalam draft. Silakan lengkapi dokumen dan submit.',
+            self::STATUS_MENUNGGU_VERIFIKASI => 'Dokumen Anda sedang diverifikasi oleh koordinator. Harap menunggu.',
+            self::STATUS_DOKUMEN_LENGKAP => 'Dokumen Anda telah diverifikasi lengkap. Menunggu proses approval.',
+            self::STATUS_DOKUMEN_KURANG => 'Dokumen Anda belum lengkap. Silakan lengkapi dan submit ulang.',
+            self::STATUS_MENUNGGU_KOORDINATOR => 'Pendaftaran Anda menunggu approval dari Koordinator.',
+            self::STATUS_MENUNGGU_KPS => 'Pendaftaran Anda menunggu approval dari Ketua Program Studi.',
+            self::STATUS_MENUNGGU_KAJUR => 'Pendaftaran Anda menunggu approval dari Ketua Jurusan.',
+            self::STATUS_MENUNGGU_WADIR1 => 'Pendaftaran Anda menunggu approval dari Wakil Direktur 1.',
+            self::STATUS_DISETUJUI_PENUH => 'Selamat! Pendaftaran Anda telah disetujui sepenuhnya.',
+            self::STATUS_SURAT_TERBIT => 'Surat pengantar magang Anda telah terbit.',
+            self::STATUS_LOA => 'Letter of Acceptance (LOA) dari perusahaan telah diterima.',
+            self::STATUS_BERJALAN => 'Magang Anda sedang berjalan. Jangan lupa isi logbook!',
+            self::STATUS_SELESAI => 'Magang Anda telah selesai. Terima kasih!',
+            self::STATUS_DITOLAK => 'Pendaftaran Anda ditolak. ' . ($this->alasan_ditolak ? 'Alasan: ' . $this->alasan_ditolak : 'Anda dapat mendaftar kembali ke lowongan lain.'),
+            self::STATUS_DIBATALKAN => 'Pendaftaran ini telah dibatalkan. Anda dapat mendaftar kembali.',
+            default => 'Status tidak diketahui.',
+        };
+    }
 }

@@ -33,6 +33,11 @@ class ProgramStudiResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Program Studi';
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->role !== 'mahasiswa';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema

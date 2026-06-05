@@ -2,7 +2,46 @@
     @php
         $pendaftaranList = $this->pendaftaran;
         $statusSteps = $this->getStatusSteps();
+        $user = auth()->user();
     @endphp
+
+    {{-- Status Magang Summary Card --}}
+    <div style="margin-bottom: 1.5rem; border-radius: 0.75rem; overflow: hidden; border: 1px solid #e5e7eb; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <div style="padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                    background: {{ match($user->status_magang) {
+                        'tidak_aktif' => '#f3f4f6',
+                        'proses' => '#fef3c7',
+                        'diterima' => '#dcfce7',
+                        'ditolak' => '#fee2e2',
+                        default => '#f3f4f6'
+                    } }};">
+                    @if($user->status_magang === 'diterima')
+                        <x-filament::icon icon="heroicon-s-check-circle" style="width: 22px; height: 22px; color: #16a34a;" />
+                    @elseif($user->status_magang === 'proses')
+                        <x-filament::icon icon="heroicon-s-clock" style="width: 22px; height: 22px; color: #d97706;" />
+                    @elseif($user->status_magang === 'ditolak')
+                        <x-filament::icon icon="heroicon-s-x-circle" style="width: 22px; height: 22px; color: #dc2626;" />
+                    @else
+                        <x-filament::icon icon="heroicon-s-minus-circle" style="width: 22px; height: 22px; color: #9ca3af;" />
+                    @endif
+                </div>
+                <div>
+                    <div style="font-size: 0.8125rem; color: #6b7280;">Status Magang Anda</div>
+                    <div style="font-size: 1rem; font-weight: 700; color: #111827;">{{ $user->status_magang_label }}</div>
+                </div>
+            </div>
+            <x-filament::badge size="lg" :color="$user->status_magang_color">
+                {{ $user->status_magang_label }}
+            </x-filament::badge>
+        </div>
+        <div style="padding: 0.75rem 1.25rem; background: #f9fafb; border-top: 1px solid #f3f4f6;">
+            <p style="margin: 0; font-size: 0.8125rem; color: #6b7280;">
+                {{ $user->status_magang_keterangan }}
+            </p>
+        </div>
+    </div>
 
     @if($pendaftaranList->isEmpty())
         <x-filament::section>
@@ -47,6 +86,28 @@
                                     {{ $pendaftaran->status_label }}
                                 </x-filament::badge>
                             </div>
+                        </div>
+                    </div>
+
+                    {{-- Status Info Message --}}
+                    <div style="padding: 0.75rem 1.25rem; border-bottom: 1px solid #f3f4f6;
+                        background: {{ $pendaftaran->isDiterima() ? '#f0fdf4' : ($pendaftaran->isDitolak() ? '#fef2f2' : ($pendaftaran->isMenunggu() ? '#fffbeb' : '#f8fafc')) }};">
+                        <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
+                            <div style="flex-shrink: 0; margin-top: 1px;">
+                                @if($pendaftaran->isDiterima())
+                                    <x-filament::icon icon="heroicon-s-check-circle" style="width: 18px; height: 18px; color: #16a34a;" />
+                                @elseif($pendaftaran->isDitolak())
+                                    <x-filament::icon icon="heroicon-s-x-circle" style="width: 18px; height: 18px; color: #dc2626;" />
+                                @elseif($pendaftaran->isMenunggu())
+                                    <x-filament::icon icon="heroicon-s-clock" style="width: 18px; height: 18px; color: #d97706;" />
+                                @else
+                                    <x-filament::icon icon="heroicon-s-information-circle" style="width: 18px; height: 18px; color: #6b7280;" />
+                                @endif
+                            </div>
+                            <p style="margin: 0; font-size: 0.8125rem; line-height: 1.5;
+                                color: {{ $pendaftaran->isDiterima() ? '#166534' : ($pendaftaran->isDitolak() ? '#991b1b' : ($pendaftaran->isMenunggu() ? '#92400e' : '#4b5563')) }};">
+                                {{ $pendaftaran->getStatusInfoMessage() }}
+                            </p>
                         </div>
                     </div>
 

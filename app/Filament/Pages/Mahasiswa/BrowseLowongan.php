@@ -15,7 +15,7 @@ class BrowseLowongan extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMagnifyingGlass;
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Magang';
+    protected static string|\UnitEnum|null $navigationGroup = 'Magang';
 
     protected static ?int $navigationSort = 1;
 
@@ -33,7 +33,7 @@ class BrowseLowongan extends Page
     public static function canAccess(): bool
     {
         $user = auth()->user();
-        return $user && $user->role === 'mahasiswa' && in_array((int)$user->semester, [6, 7]);
+        return $user && $user->role === 'mahasiswa' && in_array((int) $user->semester, [6, 7]);
     }
 
     public function getLowonganProperty()
@@ -45,7 +45,7 @@ class BrowseLowongan extends Page
         if ($this->search) {
             $query->where(function ($q) {
                 $q->where('judul', 'like', "%{$this->search}%")
-                    ->orWhereHas('mitra', fn ($mq) => $mq->where('nama', 'like', "%{$this->search}%"));
+                    ->orWhereHas('mitra', fn($mq) => $mq->where('nama', 'like', "%{$this->search}%"));
             });
         }
 
@@ -75,6 +75,17 @@ class BrowseLowongan extends Page
     {
         $lowongan = LowonganMagang::findOrFail($lowonganId);
         $user = auth()->user();
+
+        // Cek status_magang — hanya bisa daftar jika tidak_aktif atau ditolak
+        if (!$user->canApplyMagang()) {
+            Notification::make()
+                ->title('Tidak dapat mendaftar')
+                ->body('Status magang Anda saat ini: "' . $user->status_magang_label . '". ' . $user->status_magang_keterangan)
+                ->danger()
+                ->duration(8000)
+                ->send();
+            return;
+        }
 
         // Cek pendaftaran aktif
         $hasActive = PendaftaranMagang::where('mahasiswa_id', $user->id)

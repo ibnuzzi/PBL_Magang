@@ -1,4 +1,56 @@
 <x-filament-panels::page>
+    {{-- Status Magang Banner --}}
+    @php $user = auth()->user(); @endphp
+    @if(!$user->canApplyMagang())
+        <div style="margin-bottom: 1.5rem; border-radius: 0.75rem; overflow: hidden;
+            border: 1px solid {{ $user->isMagangDiterima() ? '#bbf7d0' : ($user->isMagangProses() ? '#fde68a' : '#fecaca') }};
+            background: {{ $user->isMagangDiterima() ? '#f0fdf4' : ($user->isMagangProses() ? '#fffbeb' : '#fef2f2') }};">
+            <div style="padding: 1rem 1.25rem; display: flex; align-items: flex-start; gap: 0.75rem;">
+                <div style="flex-shrink: 0; margin-top: 2px;">
+                    @if($user->isMagangDiterima())
+                        <x-filament::icon icon="heroicon-s-check-circle" style="width: 24px; height: 24px; color: #16a34a;" />
+                    @elseif($user->isMagangProses())
+                        <x-filament::icon icon="heroicon-s-clock" style="width: 24px; height: 24px; color: #d97706;" />
+                    @else
+                        <x-filament::icon icon="heroicon-s-x-circle" style="width: 24px; height: 24px; color: #dc2626;" />
+                    @endif
+                </div>
+                <div style="flex: 1;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.375rem; flex-wrap: wrap;">
+                        <h4 style="margin: 0; font-size: 0.9375rem; font-weight: 600;
+                            color: {{ $user->isMagangDiterima() ? '#166534' : ($user->isMagangProses() ? '#92400e' : '#991b1b') }};">
+                            @if($user->isMagangDiterima())
+                                ✅ Diterima / MBKM
+                            @elseif($user->isMagangProses())
+                                ⏳ Proses Pendaftaran
+                            @else
+                                Status: {{ $user->status_magang_label }}
+                            @endif
+                        </h4>
+                        <x-filament::badge :color="$user->status_magang_color">
+                            {{ $user->status_magang_label }}
+                        </x-filament::badge>
+                    </div>
+                    <p style="margin: 0 0 0.5rem 0; font-size: 0.875rem; line-height: 1.5;
+                        color: {{ $user->isMagangDiterima() ? '#15803d' : ($user->isMagangProses() ? '#a16207' : '#b91c1c') }};">
+                        {{ $user->status_magang_keterangan }}
+                    </p>
+                    <a href="{{ \App\Filament\Pages\Mahasiswa\StatusPendaftaran::getUrl() }}"
+                       style="font-size: 0.875rem; font-weight: 600; color: #003B7A; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem;">
+                        Lihat Detail Pendaftaran →
+                    </a>
+                </div>
+            </div>
+            @if($user->isMagangProses())
+                <div style="padding: 0.75rem 1.25rem; background: rgba(0,0,0,0.04); border-top: 1px solid rgba(0,0,0,0.06);">
+                    <p style="margin: 0; font-size: 0.8125rem; color: #78716c;">
+                        ℹ️ Anda tidak dapat mendaftar ke perusahaan lain selama pendaftaran masih dalam proses.
+                    </p>
+                </div>
+            @endif
+        </div>
+    @endif
+
     {{-- Search & Filter --}}
     <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div style="flex: 1; min-width: 200px;">
@@ -139,6 +191,20 @@
                             <x-filament::button color="gray" disabled style="width: 100%;">
                                 Kuota Penuh
                             </x-filament::button>
+                        @elseif(!$user->canApplyMagang())
+                            <div style="display: flex; gap: 0.5rem;">
+                                <x-filament::button
+                                    color="gray"
+                                    wire:click="openDetail({{ $item->id }})"
+                                    style="flex: 1;"
+                                    outlined
+                                >
+                                    Detail
+                                </x-filament::button>
+                                <x-filament::button color="gray" disabled style="flex: 1;" title="Anda masih memiliki pendaftaran aktif">
+                                    Tidak Tersedia
+                                </x-filament::button>
+                            </div>
                         @else
                             <div style="display: flex; gap: 0.5rem;">
                                 <x-filament::button
@@ -234,7 +300,15 @@
                     <x-filament::button color="gray" wire:click="closeDetail" outlined>
                         Tutup
                     </x-filament::button>
-                    @if(!$this->selectedDetail->isFull())
+                    @if($this->selectedDetail->isFull())
+                        <x-filament::button color="gray" disabled>
+                            Kuota Penuh
+                        </x-filament::button>
+                    @elseif(!$user->canApplyMagang())
+                        <x-filament::button color="gray" disabled title="Anda masih memiliki pendaftaran aktif">
+                            Tidak Tersedia
+                        </x-filament::button>
+                    @else
                         <x-filament::button wire:click="daftarLowongan({{ $this->selectedDetail->id }})">
                             Daftar Sekarang
                         </x-filament::button>
