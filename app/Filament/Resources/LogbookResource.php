@@ -13,11 +13,13 @@ use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ViewField;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -135,19 +137,8 @@ class LogbookResource extends Resource
 
                 Section::make('Status & Approval')
                     ->columns(2)
+                    ->visible(fn() => auth()->user()?->role !== 'mahasiswa')
                     ->schema([
-                        Select::make('status_supervisor')
-                            ->label('Status Supervisor')
-                            ->options([
-                                'menunggu' => 'Menunggu',
-                                'disetujui' => 'Disetujui',
-                                'ditolak' => 'Ditolak',
-                            ])
-                            ->default('menunggu')
-                            ->native(false)
-                            ->disabled(fn() => auth()->user()?->role === 'mahasiswa')
-                            ->dehydrated(),
-
                         Select::make('status_dosen')
                             ->label('Status Dosen')
                             ->options([
@@ -160,12 +151,20 @@ class LogbookResource extends Resource
                             ->disabled(fn() => auth()->user()?->role === 'mahasiswa')
                             ->dehydrated(),
 
-                        FileUpload::make('bukti_ttd_path')
-                            ->label('Upload TTD Manual (Fallback Offline)')
-                            ->image()
-                            ->directory('logbook-ttd')
-                            ->maxSize(2048)
-                            ->helperText('Gunakan jika supervisor tidak dapat melakukan persetujuan digital via WhatsApp.'),
+
+                        ViewField::make('ttd_dosen')
+                            ->label('Tanda Tangan Digital Dosen')
+                            ->view('filament.forms.components.signature-pad')
+                            ->columnSpanFull()
+                            ->dehydrateStateUsing(function ($state) {
+                                if ($state && str_starts_with($state, 'data:image/png;base64,')) {
+                                    $data = base64_decode(substr($state, strlen('data:image/png;base64,')));
+                                    $filename = 'signatures/' . uniqid() . '.png';
+                                    \Illuminate\Support\Facades\Storage::disk('public')->put($filename, $data);
+                                    return $filename;
+                                }
+                                return $state;
+                            }),
                     ]),
             ]);
     }
@@ -230,6 +229,26 @@ class LogbookResource extends Resource
                         'disetujui' => 'Disetujui',
                         'ditolak' => 'Ditolak',
                     ]),
+                Filter::make('tanggal')
+                    ->form([
+                        DatePicker::make('dari_tanggal')
+                            ->label('Dari Tanggal')
+                            ->native(false),
+                        DatePicker::make('sampai_tanggal')
+                            ->label('Sampai Tanggal')
+                            ->native(false),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['dari_tanggal'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('tanggal', '>=', $date),
+                            )
+                            ->when(
+                                $data['sampai_tanggal'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('tanggal', '<=', $date),
+                            );
+                    }),
             ])
             ->defaultSort('tanggal', 'desc')
             ->recordActions([
@@ -307,7 +326,7 @@ class LogbookResource extends Resource
                     $q->where('mahasiswa_id', $user->id);
                 });
             }
-            if ($user->role === 'dosen') {
+            if (in_array($user->role, ['dosen', 'koordinator', 'kps', 'kajur'])) {
                 return $query->whereHas('pelaksanaan.pendaftaran', function ($q) use ($user) {
                     $q->where('dosen_pembimbing_id', $user->id);
                 });

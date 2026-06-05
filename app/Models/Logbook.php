@@ -20,6 +20,7 @@ class Logbook extends Model
         'status_supervisor',
         'status_dosen',
         'bukti_ttd_path',
+        'ttd_dosen',
         'foto_kegiatan',
         'submitted_at',
     ];
@@ -65,6 +66,10 @@ class Logbook extends Model
                 if (!$logbook->submitted_at) {
                     $logbook->submitted_at = now();
                 }
+            }
+
+            if ($logbook->ttd_dosen && $logbook->status_dosen === 'menunggu') {
+                $logbook->status_dosen = 'disetujui';
             }
         });
     }

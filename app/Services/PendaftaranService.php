@@ -241,7 +241,15 @@ class PendaftaranService
      */
     public function mulaiPelaksanaan(PendaftaranMagang $pendaftaran): PendaftaranMagang
     {
-        $pendaftaran->update(['status' => PendaftaranMagang::STATUS_BERJALAN]);
+        // Secara otomatis pilih dosen pembimbing acak jika belum ditentukan
+        if (!$pendaftaran->dosen_pembimbing_id) {
+            $pendaftaran->dosen_pembimbing_id = $this->assignRandomDosenPembimbing($pendaftaran);
+        }
+
+        $pendaftaran->update([
+            'status' => PendaftaranMagang::STATUS_BERJALAN,
+            'dosen_pembimbing_id' => $pendaftaran->dosen_pembimbing_id,
+        ]);
         $this->notifikasiService->notifyStatusChange($pendaftaran);
 
         // Increment kuota terisi di lowongan
@@ -250,6 +258,47 @@ class PendaftaranService
         }
 
         return $pendaftaran->fresh();
+    }
+
+    /**
+     * Pilih dosen pembimbing secara acak yang kuotanya belum penuh.
+     */
+    public function assignRandomDosenPembimbing(PendaftaranMagang $pendaftaran): ?int
+    {
+        // 1. Dapatkan semua dosen/staf yang eligible untuk bimbingan
+        $eligibleSupervisors = User::whereIn('role', ['dosen', 'koordinator', 'kps', 'kajur'])
+            ->where('is_active', true)
+            ->get();
+
+        if ($eligibleSupervisors->isEmpty()) {
+            throw new \Exception('Tidak ada dosen pembimbing yang aktif di sistem.');
+        }
+
+        // 2. Cari dosen yang kuota mahasiswa bimbingannya belum penuh
+        // Load dihitung dari pendaftaran magang dengan status 'berjalan' (internship ongoing)
+        $availableSupervisors = $eligibleSupervisors->filter(function (User $supervisor) {
+            $currentLoad = PendaftaranMagang::where('dosen_pembimbing_id', $supervisor->id)
+                ->where('status', PendaftaranMagang::STATUS_BERJALAN)
+                ->count();
+            
+            $quota = $supervisor->kuota_bimbingan ?? 5; // default 5 jika null/kosong
+            return $currentLoad < $quota;
+        });
+
+        if ($availableSupervisors->isNotEmpty()) {
+            // Pick randomly
+            return $availableSupervisors->random()->id;
+        }
+
+        // 3. Fallback jika semua dosen sudah mencapai batas kuota:
+        // Pilih dosen yang memiliki beban (load) bimbingan paling sedikit
+        $supervisorWithLeastLoad = $eligibleSupervisors->sortBy(function (User $supervisor) {
+            return PendaftaranMagang::where('dosen_pembimbing_id', $supervisor->id)
+                ->where('status', PendaftaranMagang::STATUS_BERJALAN)
+                ->count();
+        })->first();
+
+        return $supervisorWithLeastLoad ? $supervisorWithLeastLoad->id : null;
     }
 
     /**

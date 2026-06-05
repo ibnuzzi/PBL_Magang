@@ -48,6 +48,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         'kompetensi',
         'is_active',
         'status_magang',
+        'kuota_bimbingan',
     ];
 
     // ─── Status Magang Constants ─────────────────────────────────────

@@ -71,6 +71,14 @@ class UserForm
                             ->maxLength(10)
                             ->visible(fn (callable $get) => in_array($get('role'), ['dosen', 'koordinator', 'kps', 'kajur', 'wadir1', 'admin'])),
 
+                        TextInput::make('kuota_bimbingan')
+                            ->label('Kuota Bimbingan')
+                            ->numeric()
+                            ->integer()
+                            ->minValue(0)
+                            ->default(5)
+                            ->visible(fn (callable $get) => in_array($get('role'), ['dosen', 'koordinator', 'kps', 'kajur'])),
+
                         TextInput::make('angkatan')
                             ->label('Angkatan')
                             ->maxLength(4)

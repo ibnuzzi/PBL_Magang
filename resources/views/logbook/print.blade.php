@@ -228,18 +228,30 @@
         </tbody>
     </table>
 
+    @php
+        $dosenTtd = $logbooks->whereNotNull('ttd_dosen')->first()?->ttd_dosen;
+        $supervisorTtd = $logbooks->whereNotNull('bukti_ttd_path')->first()?->bukti_ttd_path;
+    @endphp
     <table class="signatures">
         <tr>
             <td>
                 Menyetujui,<br>
                 <strong>Supervisor Industri</strong>
-                <div class="signature-space"></div>
+                <div class="signature-space" style="display: flex; align-items: center; justify-content: center; height: 80px; margin: 10px 0;">
+                    @if($supervisorTtd)
+                        <img src="{{ asset('storage/' . $supervisorTtd) }}" style="max-height: 80px; object-fit: contain;">
+                    @endif
+                </div>
                 <span class="signature-name">{{ $pelaksanaan?->nama_supervisor ?? '....................................' }}</span>
             </td>
             <td>
                 Mengetahui,<br>
                 <strong>Dosen Pembimbing</strong>
-                <div class="signature-space"></div>
+                <div class="signature-space" style="display: flex; align-items: center; justify-content: center; height: 80px; margin: 10px 0;">
+                    @if($dosenTtd)
+                        <img src="{{ asset('storage/' . $dosenTtd) }}" style="max-height: 80px; object-fit: contain;">
+                    @endif
+                </div>
                 <span class="signature-name">{{ $pelaksanaan?->pendaftaran?->dosenPembimbing?->name ?? '....................................' }}</span><br>
                 NIP: {{ $pelaksanaan?->pendaftaran?->dosenPembimbing?->nip ?? '....................................' }}
             </td>
