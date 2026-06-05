@@ -35,17 +35,17 @@ jobs:
         npm install
         npm run build
 
-    - name: 📂 Sync files
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+    - name: 🗑️ Hapus file yang tidak perlu diupload
+      run: |
+        rm -rf .git .github tests node_modules
+        rm -f .env phpunit.xml
+
+    - name: 📂 Sync files via SFTP
+      uses: appleboy/scp-action@v0.1.7
       with:
-        server: ${{ secrets.FTP_SERVER }}
+        host: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
-        server-dir: /public_html/ # Ganti dengan direktori tujuan di Zenhost Anda (misal: /public_html/app/)
-        exclude: |
-          **/.git*
-          **/.git*/**
-          **/node_modules/**
-          **/tests/**
-          .env
-          phpunit.xml
+        port: 22
+        source: "."
+        target: "/home/magangma/public_html/"
