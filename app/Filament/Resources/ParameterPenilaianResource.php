@@ -74,7 +74,20 @@ class ParameterPenilaianResource extends Resource
                             ->required()
                             ->suffix('%')
                             ->minValue(0)
-                            ->maxValue(100),
+                            ->maxValue(100)
+                            ->rules([
+                                function (callable $get) {
+                                    return function (string $attribute, $value, callable $fail) use ($get) {
+                                        $bobotIndustri = (float) $get('bobot_industri');
+                                        $bobotDosen = (float) $get('bobot_dosen');
+                                        $bobotPenguji = (float) $value;
+                                        $total = $bobotIndustri + $bobotDosen + $bobotPenguji;
+                                        if ($total !== 100.0) {
+                                            $fail("Total bobot industri, dosen, dan penguji harus sama dengan 100%. Jumlah saat ini: {$total}%.");
+                                        }
+                                    };
+                                }
+                            ]),
                     ]),
 
                 Section::make('Konversi Grade')

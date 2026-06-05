@@ -70,6 +70,22 @@ class UserForm
                             ->maxLength(4)
                             ->visible(fn (callable $get) => $get('role') === 'mahasiswa'),
 
+                        TextInput::make('ipk')
+                            ->label('IPK')
+                            ->numeric()
+                            ->inputMode('decimal')
+                            ->minValue(0.00)
+                            ->maxValue(4.00)
+                            ->visible(fn (callable $get) => $get('role') === 'mahasiswa'),
+
+                        TextInput::make('semester')
+                            ->label('Semester')
+                            ->numeric()
+                            ->integer()
+                            ->minValue(1)
+                            ->maxValue(14)
+                            ->visible(fn (callable $get) => $get('role') === 'mahasiswa'),
+
                         Select::make('program_studi_id')
                             ->label('Program Studi')
                             ->relationship('programStudi', 'nama')

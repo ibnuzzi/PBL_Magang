@@ -33,7 +33,8 @@ class UploadDokumen extends Page implements HasForms
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->role === 'mahasiswa';
+        $user = auth()->user();
+        return $user && $user->role === 'mahasiswa' && in_array((int)$user->semester, [6, 7]);
     }
 
     public function mount(): void

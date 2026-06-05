@@ -34,7 +34,20 @@ class LowonganMagangForm
                             ->searchable()
                             ->preload()
                             ->required()
-                            ->native(false),
+                            ->native(false)
+                            ->rules([
+                                function (callable $get) {
+                                    return function (string $attribute, $value, callable $fail) use ($get) {
+                                        $jenisMagang = $get('jenis_magang');
+                                        if (in_array($jenisMagang, ['pilihan', 'wajib'])) {
+                                            $mitra = \App\Models\MitraPerusahaan::find($value);
+                                            if ($mitra && !$mitra->is_resmi_polinema && !$mitra->is_cti) {
+                                                $fail('Magang SKS (Pilihan & Wajib) hanya boleh di mitra resmi Polinema atau CTI.');
+                                            }
+                                        }
+                                    };
+                                }
+                            ]),
 
                         Select::make('jenis_magang')
                             ->label('Jenis Magang')

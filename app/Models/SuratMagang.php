@@ -25,6 +25,28 @@ class SuratMagang extends Model
         ];
     }
 
+    protected static function booted()
+    {
+        static::saving(function (SuratMagang $surat) {
+            if ($surat->status === 'diterbitkan' && is_null($surat->diterbitkan_at)) {
+                $surat->diterbitkan_at = now();
+            }
+        });
+
+        static::saved(function (SuratMagang $surat) {
+            if ($surat->status === 'diterbitkan') {
+                $pendaftaran = $surat->pendaftaran;
+                if ($pendaftaran) {
+                    if ($surat->jenis_surat === 'pengantar' && $pendaftaran->status !== \App\Models\PendaftaranMagang::STATUS_SURAT_TERBIT) {
+                        app(\App\Services\PendaftaranService::class)->terbitkanSurat($pendaftaran);
+                    } elseif ($surat->jenis_surat === 'loa' && $pendaftaran->status !== \App\Models\PendaftaranMagang::STATUS_LOA) {
+                        app(\App\Services\PendaftaranService::class)->loaDiterima($pendaftaran);
+                    }
+                }
+            }
+        });
+    }
+
     // ─── Relationships ───────────────────────────────────────────────
 
     public function pendaftaran(): BelongsTo

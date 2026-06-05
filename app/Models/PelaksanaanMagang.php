@@ -30,6 +30,18 @@ class PelaksanaanMagang extends Model
         ];
     }
 
+    protected static function booted()
+    {
+        static::saved(function (PelaksanaanMagang $pelaksanaan) {
+            if ($pelaksanaan->status === 'berjalan') {
+                $pendaftaran = $pelaksanaan->pendaftaran;
+                if ($pendaftaran && $pendaftaran->status !== \App\Models\PendaftaranMagang::STATUS_BERJALAN) {
+                    app(\App\Services\PendaftaranService::class)->mulaiPelaksanaan($pendaftaran);
+                }
+            }
+        });
+    }
+
     // ─── Relationships ───────────────────────────────────────────────
 
     public function pendaftaran(): BelongsTo

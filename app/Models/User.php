@@ -34,6 +34,12 @@ class User extends Authenticatable implements FilamentUser
         'program_studi_id',
         'no_hp',
         'foto',
+        'skills',
+        'pengalaman',
+        'cv_path',
+        'portfolio_path',
+        'cv_text',
+        'portfolio_text',
         'is_active',
     ];
 

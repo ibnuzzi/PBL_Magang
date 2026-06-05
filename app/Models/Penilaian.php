@@ -55,4 +55,52 @@ class Penilaian extends Model
     {
         return $this->hasMany(DetailPenilaian::class, 'penilaian_id');
     }
+
+    protected static function booted()
+    {
+        static::saving(function ($penilaian) {
+            $parameter = $penilaian->parameter ?? ParameterPenilaian::where('is_active', true)->first();
+            if ($parameter) {
+                if (!$penilaian->parameter_id) {
+                    $penilaian->parameter_id = $parameter->id;
+                }
+                
+                $bobotIndustri = (float) $parameter->bobot_industri;
+                $bobotDosen = (float) $parameter->bobot_dosen;
+                $bobotPenguji = (float) $parameter->bobot_penguji;
+
+                $nilaiIndustri = (float) $penilaian->nilai_industri;
+                $nilaiDosen = (float) $penilaian->nilai_dosen;
+                $nilaiPenguji = (float) $penilaian->nilai_penguji;
+
+                $penilaian->nilai_akhir = ($nilaiIndustri * $bobotIndustri +
+                                           $nilaiDosen * $bobotDosen +
+                                           $nilaiPenguji * $bobotPenguji) / 100;
+
+                $gradeMap = $parameter->konversi_grade;
+                if (!empty($gradeMap)) {
+                    arsort($gradeMap);
+                    $grade = 'E';
+                    foreach ($gradeMap as $g => $minVal) {
+                        if ($penilaian->nilai_akhir >= (float) $minVal) {
+                            $grade = $g;
+                            break;
+                        }
+                    }
+                    $penilaian->grade = $grade;
+                }
+
+                $penilaian->predikat = match ($penilaian->grade) {
+                    'A' => 'Dengan Pujian (Sangat Memuaskan)',
+                    'AB' => 'Sangat Baik',
+                    'B' => 'Baik',
+                    'BC' => 'Cukup Baik',
+                    'C' => 'Cukup',
+                    'D' => 'Kurang',
+                    'E' => 'Gagal',
+                    default => 'Tidak Diketahui',
+                };
+            }
+        });
+    }
 }

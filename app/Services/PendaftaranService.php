@@ -20,15 +20,18 @@ class PendaftaranService
     }
 
     /**
-     * Buat draft pendaftaran Flow A (Pilihan) — dari lowongan.
+     * Buat draft pendaftaran Flow A (Pilihan/Wajib) — dari lowongan.
      */
     public function createDraftPilihan(User $mahasiswa, LowonganMagang $lowongan): PendaftaranMagang
     {
+        $jenisMagang = $lowongan->jenis_magang; // pilihan or wajib
+        $this->validatePendaftaran($mahasiswa, $jenisMagang, $lowongan->mitra_id);
+
         return PendaftaranMagang::create([
             'mahasiswa_id' => $mahasiswa->id,
             'lowongan_id' => $lowongan->id,
             'mitra_id' => $lowongan->mitra_id,
-            'jenis_magang' => 'pilihan',
+            'jenis_magang' => $jenisMagang,
             'status' => PendaftaranMagang::STATUS_DRAFT,
             'tanggal_daftar' => now(),
         ]);
@@ -39,6 +42,8 @@ class PendaftaranService
      */
     public function createDraftMandiri(User $mahasiswa, int $mitraId): PendaftaranMagang
     {
+        $this->validatePendaftaran($mahasiswa, 'mandiri', $mitraId);
+
         return PendaftaranMagang::create([
             'mahasiswa_id' => $mahasiswa->id,
             'lowongan_id' => null,
@@ -47,6 +52,47 @@ class PendaftaranService
             'status' => PendaftaranMagang::STATUS_DRAFT,
             'tanggal_daftar' => now(),
         ]);
+    }
+
+    /**
+     * Validasi kelayakan pendaftaran magang mahasiswa.
+     */
+    protected function validatePendaftaran(User $mahasiswa, string $jenisMagang, int $mitraId): void
+    {
+        // 1. Validasi Semester
+        $semester = (int) $mahasiswa->semester;
+        if ($semester !== 6 && $semester !== 7) {
+            throw new \Exception('Pendaftaran magang hanya diperbolehkan untuk mahasiswa semester 6 atau 7.');
+        }
+
+        if ($jenisMagang === 'pilihan' && $semester !== 6) {
+            throw new \Exception('Magang Pilihan hanya boleh diambil oleh mahasiswa semester 6.');
+        }
+
+        if ($jenisMagang === 'wajib' && $semester !== 7) {
+            throw new \Exception('Magang Wajib hanya boleh diambil oleh mahasiswa semester 7.');
+        }
+
+        // 2. Validasi Pendaftaran Aktif Tunggal
+        $activePendaftaran = PendaftaranMagang::where('mahasiswa_id', $mahasiswa->id)
+            ->whereNotIn('status', [
+                PendaftaranMagang::STATUS_DITOLAK,
+                PendaftaranMagang::STATUS_DIBATALKAN,
+                PendaftaranMagang::STATUS_SELESAI
+            ])
+            ->exists();
+
+        if ($activePendaftaran) {
+            throw new \Exception('Anda masih memiliki pendaftaran magang yang aktif. Harap selesaikan seleksi atau batalkan terlebih dahulu.');
+        }
+
+        // 3. Validasi Mitra Resmi untuk Magang SKS (Pilihan/Wajib)
+        if (in_array($jenisMagang, ['pilihan', 'wajib'])) {
+            $mitra = MitraPerusahaan::find($mitraId);
+            if (!$mitra || (!$mitra->is_resmi_polinema && !$mitra->is_cti)) {
+                throw new \Exception('Magang SKS (Pilihan & Wajib) hanya diperbolehkan pada mitra resmi Polinema atau CTI.');
+            }
+        }
     }
 
     /**

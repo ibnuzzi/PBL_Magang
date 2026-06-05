@@ -27,15 +27,38 @@ class StatusPendaftaran extends Page
 
     public static function canAccess(): bool
     {
-        return Auth::user()?->role === 'mahasiswa';
+        $user = Auth::user();
+        return $user && $user->role === 'mahasiswa' && in_array((int)$user->semester, [6, 7]);
     }
 
     public function getPendaftaranProperty()
     {
-        return PendaftaranMagang::where('mahasiswa_id', Auth::user()->id)
-            ->with(['lowongan', 'mitra', 'dokumen', 'dosenPembimbing', 'approval.approver'])
+        $pendaftarans = PendaftaranMagang::where('mahasiswa_id', Auth::user()->id)
+            ->with(['lowongan', 'mitra', 'dokumen', 'dosenPembimbing', 'approval.approver', 'surat'])
             ->orderBy('created_at', 'desc')
             ->get();
+
+        foreach ($pendaftarans as $pendaftaran) {
+            $hasPublishedLoa = $pendaftaran->surat->where('jenis_surat', 'loa')->where('status', 'diterbitkan')->isNotEmpty();
+            $hasPublishedPengantar = $pendaftaran->surat->where('jenis_surat', 'pengantar')->where('status', 'diterbitkan')->isNotEmpty();
+
+            $flow = PendaftaranMagang::statusFlow();
+            $currentIndex = array_search($pendaftaran->status, $flow);
+
+            if ($hasPublishedLoa) {
+                $loaIndex = array_search(PendaftaranMagang::STATUS_LOA, $flow);
+                if ($currentIndex !== false && $currentIndex < $loaIndex) {
+                    app(PendaftaranService::class)->loaDiterima($pendaftaran);
+                }
+            } elseif ($hasPublishedPengantar) {
+                $pengantarIndex = array_search(PendaftaranMagang::STATUS_SURAT_TERBIT, $flow);
+                if ($currentIndex !== false && $currentIndex < $pengantarIndex) {
+                    app(PendaftaranService::class)->terbitkanSurat($pendaftaran);
+                }
+            }
+        }
+
+        return $pendaftarans;
     }
 
     /**

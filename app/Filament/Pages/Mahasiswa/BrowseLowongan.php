@@ -32,7 +32,8 @@ class BrowseLowongan extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->role === 'mahasiswa';
+        $user = auth()->user();
+        return $user && $user->role === 'mahasiswa' && in_array((int)$user->semester, [6, 7]);
     }
 
     public function getLowonganProperty()
@@ -75,16 +76,20 @@ class BrowseLowongan extends Page
         $lowongan = LowonganMagang::findOrFail($lowonganId);
         $user = auth()->user();
 
-        // Cek apakah sudah pernah daftar ke lowongan ini
-        $existing = PendaftaranMagang::where('mahasiswa_id', $user->id)
-            ->where('lowongan_id', $lowonganId)
-            ->whereNotIn('status', [PendaftaranMagang::STATUS_DITOLAK, PendaftaranMagang::STATUS_DIBATALKAN])
+        // Cek pendaftaran aktif
+        $hasActive = PendaftaranMagang::where('mahasiswa_id', $user->id)
+            ->whereNotIn('status', [
+                PendaftaranMagang::STATUS_DITOLAK,
+                PendaftaranMagang::STATUS_DIBATALKAN,
+                PendaftaranMagang::STATUS_SELESAI
+            ])
             ->exists();
 
-        if ($existing) {
+        if ($hasActive) {
             Notification::make()
-                ->title('Anda sudah mendaftar ke lowongan ini')
-                ->warning()
+                ->title('Gagal Mendaftar')
+                ->body('Anda masih memiliki pendaftaran magang yang aktif. Harap selesaikan seleksi atau batalkan terlebih dahulu.')
+                ->danger()
                 ->send();
             return;
         }
@@ -100,15 +105,23 @@ class BrowseLowongan extends Page
             return;
         }
 
-        // Buat draft pendaftaran
-        $pendaftaran = app(PendaftaranService::class)->createDraftPilihan($user, $lowongan);
+        try {
+            // Buat draft pendaftaran
+            $pendaftaran = app(PendaftaranService::class)->createDraftPilihan($user, $lowongan);
 
-        Notification::make()
-            ->title('Pendaftaran berhasil dibuat!')
-            ->body('Silakan upload dokumen yang diperlukan lalu submit pendaftaran Anda.')
-            ->success()
-            ->send();
+            Notification::make()
+                ->title('Pendaftaran berhasil dibuat!')
+                ->body('Silakan upload dokumen yang diperlukan lalu submit pendaftaran Anda.')
+                ->success()
+                ->send();
 
-        $this->redirect(StatusPendaftaran::getUrl());
+            $this->redirect(StatusPendaftaran::getUrl());
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title('Gagal Mendaftar')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+        }
     }
 }

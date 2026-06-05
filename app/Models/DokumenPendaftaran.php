@@ -31,6 +31,7 @@ class DokumenPendaftaran extends Model
             'surat_lamaran' => 'Surat Lamaran',
             'surat_rekomendasi' => 'Surat Rekomendasi',
             'sertifikasi_kompetensi' => 'Sertifikasi Kompetensi',
+            'portfolio' => 'Portfolio',
         ];
     }
 
@@ -39,7 +40,7 @@ class DokumenPendaftaran extends Model
      */
     public static function dokumenPilihan(): array
     {
-        return ['khs', 'proposal_magang', 'cv', 'surat_izin_ortu', 'surat_pengantar', 'surat_integritas', 'surat_lamaran', 'surat_rekomendasi', 'sertifikasi_kompetensi'];
+        return ['khs', 'proposal_magang', 'cv', 'surat_izin_ortu', 'surat_integritas', 'portfolio'];
     }
 
     /**
@@ -47,7 +48,7 @@ class DokumenPendaftaran extends Model
      */
     public static function dokumenMandiri(): array
     {
-        return ['khs', 'proposal_magang', 'cv', 'surat_izin_ortu', 'surat_pengantar', 'surat_integritas', 'surat_lamaran', 'surat_rekomendasi', 'sertifikasi_kompetensi'];
+        return ['khs', 'proposal_magang', 'cv', 'surat_izin_ortu', 'surat_integritas', 'portfolio'];
     }
 
     // ─── Relationships ───────────────────────────────────────────────

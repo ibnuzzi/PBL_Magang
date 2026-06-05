@@ -20,6 +20,7 @@ class Logbook extends Model
         'status_supervisor',
         'status_dosen',
         'bukti_ttd_path',
+        'foto_kegiatan',
         'submitted_at',
     ];
 
@@ -41,5 +42,30 @@ class Logbook extends Model
     public function supervisorTokens(): HasMany
     {
         return $this->hasMany(LogbookSupervisorToken::class, 'logbook_id');
+    }
+
+    public function generateSupervisorToken(string $noHpSupervisor): LogbookSupervisorToken
+    {
+        $this->supervisorTokens()->where('is_used', false)->update(['expired_at' => now()]);
+
+        return $this->supervisorTokens()->create([
+            'token' => \Illuminate\Support\Str::random(40),
+            'no_hp_supervisor' => $noHpSupervisor,
+            'is_used' => false,
+            'expired_at' => now()->addDays(7),
+            'wa_sent' => false,
+        ]);
+    }
+
+    protected static function booted()
+    {
+        static::saving(function ($logbook) {
+            if ($logbook->bukti_ttd_path && $logbook->status_supervisor === 'menunggu') {
+                $logbook->status_supervisor = 'disetujui';
+                if (!$logbook->submitted_at) {
+                    $logbook->submitted_at = now();
+                }
+            }
+        });
     }
 }

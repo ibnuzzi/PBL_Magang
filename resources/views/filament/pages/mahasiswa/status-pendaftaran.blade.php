@@ -11,13 +11,10 @@
                     <x-filament::icon icon="heroicon-o-clipboard-document-list" style="width: 48px; height: 48px;" />
                 </div>
                 <h3 style="font-size: 0.9375rem; font-weight: 600; color: #111827; margin: 0;">Belum ada pendaftaran</h3>
-                <p style="font-size: 0.875rem; color: #6b7280; margin-top: 0.25rem;">Anda belum mendaftar magang. Silakan browse lowongan atau daftar mandiri.</p>
+                <p style="font-size: 0.875rem; color: #6b7280; margin-top: 0.25rem;">Anda belum mendaftar magang. Silakan browse lowongan.</p>
                 <div style="display: flex; justify-content: center; gap: 0.75rem; margin-top: 1.5rem;">
                     <x-filament::button tag="a" :href="\App\Filament\Pages\Mahasiswa\BrowseLowongan::getUrl()">
                         Browse Lowongan
-                    </x-filament::button>
-                    <x-filament::button tag="a" :href="\App\Filament\Pages\Mahasiswa\DaftarMagang::getUrl()" color="gray">
-                        Daftar Mandiri
                     </x-filament::button>
                 </div>
             </div>
@@ -124,6 +121,33 @@
                             <p style="font-size: 0.875rem; color: #6b7280; margin: 0;">
                                 <span style="font-weight: 500;">Dosen Pembimbing:</span> {{ $pendaftaran->dosenPembimbing->name }}
                             </p>
+                        </div>
+                    @endif
+
+                    {{-- Surat Magang --}}
+                    @if($pendaftaran->surat->where('status', 'diterbitkan')->isNotEmpty())
+                        <div style="padding: 0.75rem 1.25rem; border-top: 1px solid #f3f4f6;">
+                            <h4 style="font-size: 0.875rem; font-weight: 500; color: #374151; margin: 0 0 0.5rem 0;">Surat yang Diterbitkan</h4>
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                @foreach($pendaftaran->surat->where('status', 'diterbitkan') as $surat)
+                                    <div style="display: flex; align-items: center; justify-content: space-between; background: #f9fafb; padding: 0.5rem 0.75rem; border-radius: 0.375rem; border: 1px solid #e5e7eb;">
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <x-filament::icon icon="heroicon-o-document-text" style="width: 20px; height: 20px; color: #f59e0b;" />
+                                            <div>
+                                                <p style="font-size: 0.875rem; font-weight: 600; color: #111827; margin: 0;">
+                                                    {{ $surat->jenis_surat === 'pengantar' ? 'Surat Pengantar Magang' : 'Letter of Acceptance (LOA)' }}
+                                                </p>
+                                                <p style="font-size: 0.75rem; color: #6b7280; margin: 0;">
+                                                    No: {{ $surat->nomor_surat }} · Terbit: {{ $surat->diterbitkan_at?->format('d M Y') ?? $surat->created_at->format('d M Y') }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <x-filament::button tag="a" :href="route('surat.download', $surat->id)" target="_blank" size="xs" color="gray" icon="heroicon-m-arrow-down-tray">
+                                            Unduh
+                                        </x-filament::button>
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
                     @endif
 
