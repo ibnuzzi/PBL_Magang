@@ -151,11 +151,6 @@
                style="border-color:#003B7A; color:#003B7A; background-color:rgba(0,59,122,0.06);">
                 Masuk
             </a>
-            <a href="#"
-               class="px-5 py-2 text-sm font-semibold rounded-lg transition-all hover:opacity-90 pjs"
-               style="background-color:#F5A623; color:#7A4500;">
-                Daftar Sekarang
-            </a>
         </div>
     </div>
 </header>
@@ -262,9 +257,15 @@
             <h2 class="text-2xl font-extrabold text-center mb-1 pjs" style="color:#003B7A;">
                 Selamat Datang Kembali
             </h2>
-            <p class="text-gray-400 text-xs text-center mb-5 leading-relaxed">
+            <p class="text-gray-400 text-xs text-center mb-3 leading-relaxed">
                 Masuk ke akun Anda untuk mengelola kegiatan magang.
             </p>
+            {{-- Logo JTI --}}
+            <div class="flex justify-center mb-5">
+                <div style="display:inline-flex; align-items:center; justify-content:center; width:88px; height:88px; border-radius:1rem; background:#F8FAFC; box-shadow:0 2px 12px rgba(0,43,86,0.10), 0 1px 3px rgba(0,0,0,0.06); border:1px solid #E2E8F0;">
+                    <img src="{{ asset('images/logo-jti.png') }}" alt="Logo JTI Polinema" style="width:60px; height:auto; object-fit:contain;">
+                </div>
+            </div>
 
 
 
@@ -315,16 +316,7 @@
                 </button>
             </form>
 
-            {{-- Divider --}}
-            <p class="text-center text-xs text-gray-400 mb-3">Belum punya akun?</p>
 
-            {{-- Register --}}
-            <a href="#" class="login-btn btn-outline-login" style="text-decoration:none;">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-                </svg>
-                Daftar Akun Mahasiswa Baru
-            </a>
 
             {{-- Bottom Status & Links --}}
             <div class="flex items-center justify-center gap-4 mt-4 pt-3" style="border-top:1px solid #F1F5F9;">
