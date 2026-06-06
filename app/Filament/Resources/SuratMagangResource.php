@@ -142,7 +142,16 @@ class SuratMagangResource extends Resource
                         'dibatalkan' => 'Dibatalkan',
                     ]),
             ])
-            ->recordActions([EditAction::make()])
+            ->groups([
+                \Filament\Tables\Grouping\Group::make('pendaftaran.mahasiswa.name')
+                    ->label('Mahasiswa')
+                    ->collapsible(),
+            ])
+            ->defaultGroup('pendaftaran.mahasiswa.name')
+            ->recordActions([
+                EditAction::make(),
+                \Filament\Actions\DeleteAction::make(),
+            ])
             ->toolbarActions([BulkActionGroup::make([DeleteBulkAction::make()])]);
     }
 

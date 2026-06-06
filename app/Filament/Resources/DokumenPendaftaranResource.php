@@ -130,6 +130,7 @@ class DokumenPendaftaranResource extends Resource
             ])
             ->recordActions([
                 EditAction::make(),
+                \Filament\Actions\DeleteAction::make(),
 
                 // Approve dokumen
                 Action::make('approve_dokumen')
@@ -169,6 +170,12 @@ class DokumenPendaftaranResource extends Resource
                         Notification::make()->title('Dokumen ditolak')->danger()->send();
                     }),
             ])
+            ->groups([
+                \Filament\Tables\Grouping\Group::make('pendaftaran.mahasiswa.name')
+                    ->label('Mahasiswa')
+                    ->collapsible(),
+            ])
+            ->defaultGroup('pendaftaran.mahasiswa.name')
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

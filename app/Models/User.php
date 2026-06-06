@@ -83,12 +83,20 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         ];
     }
 
-    /**
-     * Determine if the user can access the Filament panel.
-     */
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->is_active;
+        if (!$this->is_active) {
+            return false;
+        }
+
+        return match ($panel->getId()) {
+            'admin' => $this->role === 'admin',
+            'mahasiswa' => $this->role === 'mahasiswa' || $this->role === 'admin',
+            'koordinator' => $this->role === 'koordinator' || $this->role === 'admin',
+            'dosen' => in_array($this->role, ['dosen', 'kps', 'kajur']) || $this->role === 'admin',
+            'wadir' => $this->role === 'wadir1' || $this->role === 'admin',
+            default => false,
+        };
     }
 
     /**
@@ -192,7 +200,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
      */
     public function canApproveLevel(string $level): bool
     {
-        return $this->role === $level;
+        return $this->role === $level || $this->role === 'admin';
     }
 
     /**

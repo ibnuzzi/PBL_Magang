@@ -79,4 +79,24 @@ class DokumenPendaftaran extends Model
     {
         return self::jenisOptions()[$this->jenis_dokumen] ?? strtoupper(str_replace('_', ' ', $this->jenis_dokumen));
     }
+
+    protected static function booted()
+    {
+        static::saved(function ($dokumen) {
+            $pendaftaran = $dokumen->pendaftaran()->first();
+            if ($pendaftaran && $pendaftaran->status === PendaftaranMagang::STATUS_MENUNGGU_VERIFIKASI) {
+                if ($dokumen->status === 'ditolak') {
+                    app(\App\Services\PendaftaranService::class)->verifikasiDokumen($pendaftaran, false);
+                    return;
+                }
+
+                $totalUploaded = $pendaftaran->dokumen()->count();
+                $totalApproved = $pendaftaran->dokumen()->where('status', 'disetujui')->count();
+
+                if ($totalUploaded > 0 && $totalUploaded === $totalApproved) {
+                    app(\App\Services\PendaftaranService::class)->verifikasiDokumen($pendaftaran, true);
+                }
+            }
+        });
+    }
 }

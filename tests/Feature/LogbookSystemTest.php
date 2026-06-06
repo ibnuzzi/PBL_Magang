@@ -338,7 +338,7 @@ class LogbookSystemTest extends TestCase
         ]);
 
         $response = $this->actingAs($mahasiswa)
-            ->get(route('filament.admin.pages.status-pendaftaran'));
+            ->get(route('filament.mahasiswa.pages.status-pendaftaran'));
 
         $response->assertStatus(200);
         $response->assertSee('SURAT-PUBLISHED-123');
@@ -533,5 +533,65 @@ class LogbookSystemTest extends TestCase
         ]);
 
         $this->assertEquals(PendaftaranMagang::STATUS_BERJALAN, $pendaftaran->fresh()->status);
+    }
+
+    public function test_pendaftaran_status_transitions_when_documents_are_approved_or_rejected()
+    {
+        $mahasiswa = User::create([
+            'name' => 'Test Student',
+            'email' => 'student@test.com',
+            'password' => bcrypt('password'),
+            'role' => 'mahasiswa',
+            'semester' => 6,
+            'ipk' => 3.50,
+            'is_active' => true,
+        ]);
+
+        $mitra = MitraPerusahaan::create([
+            'nama' => 'Mitra Resmi',
+            'alamat' => 'Alamat',
+            'bidang_usaha' => 'IT',
+            'nama_pic' => 'PIC Resmi',
+            'jabatan_pic' => 'HR',
+            'no_hp_pic' => '0812345678',
+            'email_pic' => 'pic@resmi.com',
+            'is_resmi_polinema' => true,
+            'status_verifikasi' => 'terverifikasi',
+        ]);
+
+        $pendaftaran = PendaftaranMagang::create([
+            'mahasiswa_id' => $mahasiswa->id,
+            'mitra_id' => $mitra->id,
+            'jenis_magang' => 'pilihan',
+            'status' => PendaftaranMagang::STATUS_MENUNGGU_VERIFIKASI,
+        ]);
+
+        $doc1 = \App\Models\DokumenPendaftaran::create([
+            'pendaftaran_id' => $pendaftaran->id,
+            'jenis_dokumen' => 'khs',
+            'file_path' => 'dokumen-pendaftaran/khs.pdf',
+            'status' => 'menunggu',
+        ]);
+
+        $doc2 = \App\Models\DokumenPendaftaran::create([
+            'pendaftaran_id' => $pendaftaran->id,
+            'jenis_dokumen' => 'cv',
+            'file_path' => 'dokumen-pendaftaran/cv.pdf',
+            'status' => 'menunggu',
+        ]);
+
+        // 1. Approve doc1. Registration should still be STATUS_MENUNGGU_VERIFIKASI.
+        $doc1->update(['status' => 'disetujui']);
+        $this->assertEquals(PendaftaranMagang::STATUS_MENUNGGU_VERIFIKASI, $pendaftaran->fresh()->status);
+
+        // 2. Approve doc2. Since all uploaded docs are now approved, registration status should transition to STATUS_MENUNGGU_KOORDINATOR.
+        $doc2->update(['status' => 'disetujui']);
+        $this->assertEquals(PendaftaranMagang::STATUS_MENUNGGU_KOORDINATOR, $pendaftaran->fresh()->status);
+
+        // 3. Reset to STATUS_MENUNGGU_VERIFIKASI and mark doc2 as ditolak (rejected). Status should transition to STATUS_DOKUMEN_KURANG.
+        $pendaftaran->refresh();
+        $pendaftaran->update(['status' => PendaftaranMagang::STATUS_MENUNGGU_VERIFIKASI]);
+        $doc2->update(['status' => 'ditolak']);
+        $this->assertEquals(PendaftaranMagang::STATUS_DOKUMEN_KURANG, $pendaftaran->fresh()->status);
     }
 }

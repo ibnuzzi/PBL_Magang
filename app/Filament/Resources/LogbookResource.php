@@ -284,8 +284,35 @@ class LogbookResource extends Resource
                     ->label('Cetak Laporan')
                     ->icon('heroicon-o-printer')
                     ->color('primary')
-                    ->visible(fn() => in_array(auth()->user()?->role, ['mahasiswa', 'admin']))
+                    ->visible(fn() => static::canAccess())
                     ->form([
+                        Select::make('mahasiswa_id')
+                            ->label('Mahasiswa')
+                            ->options(function () {
+                                $user = auth()->user();
+                                if (!$user) {
+                                    return [];
+                                }
+                                if ($user->role === 'admin') {
+                                    return \App\Models\User::where('role', 'mahasiswa')
+                                        ->whereHas('pendaftaranMagangAsMahasiswa', function ($q) {
+                                            $q->whereHas('pelaksanaan');
+                                        })
+                                        ->pluck('name', 'id');
+                                }
+                                if (in_array($user->role, ['dosen', 'koordinator', 'kps', 'kajur'])) {
+                                    return \App\Models\User::where('role', 'mahasiswa')
+                                        ->whereHas('pendaftaranMagangAsMahasiswa', function ($q) use ($user) {
+                                            $q->where('dosen_pembimbing_id', $user->id)
+                                              ->whereHas('pelaksanaan');
+                                        })
+                                        ->pluck('name', 'id');
+                                }
+                                return [];
+                            })
+                            ->searchable()
+                            ->required()
+                            ->visible(fn() => auth()->user()?->role !== 'mahasiswa'),
                         DatePicker::make('tanggal_mulai')
                             ->label('Tanggal Mulai')
                             ->required()
@@ -296,11 +323,14 @@ class LogbookResource extends Resource
                             ->default(now()->toDateString()),
                     ])
                     ->action(function (array $data) {
-                        $query = http_build_query([
+                        $params = [
                             'tanggal_mulai' => $data['tanggal_mulai'],
                             'tanggal_selesai' => $data['tanggal_selesai'],
-                        ]);
-                        return redirect()->to(route('mahasiswa.logbook.print') . '?' . $query);
+                        ];
+                        if (isset($data['mahasiswa_id'])) {
+                            $params['mahasiswa_id'] = $data['mahasiswa_id'];
+                        }
+                        return redirect()->to(route('mahasiswa.logbook.print') . '?' . http_build_query($params));
                     })
             ])
             ->toolbarActions([BulkActionGroup::make([DeleteBulkAction::make()])]);

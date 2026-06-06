@@ -11,6 +11,8 @@ use BackedEnum;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\FileUpload;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -184,7 +186,7 @@ class PendaftaranMagangResource extends Resource
                     ->modalHeading('Verifikasi Dokumen Lengkap')
                     ->modalDescription('Apakah Anda yakin semua dokumen sudah lengkap dan sesuai?')
                     ->visible(fn ($record) => $record->status === PendaftaranMagang::STATUS_MENUNGGU_VERIFIKASI
-                        && Auth::user()?->role === 'koordinator')
+                        && in_array(Auth::user()?->role, ['koordinator', 'admin']))
                     ->action(function ($record) {
                         app(PendaftaranService::class)->verifikasiDokumen($record, true);
                         Notification::make()->title('Dokumen diverifikasi lengkap')->success()->send();
@@ -198,7 +200,7 @@ class PendaftaranMagangResource extends Resource
                     ->modalHeading('Dokumen Kurang')
                     ->modalDescription('Tandai bahwa dokumen belum lengkap. Mahasiswa akan diminta melengkapi.')
                     ->visible(fn ($record) => $record->status === PendaftaranMagang::STATUS_MENUNGGU_VERIFIKASI
-                        && Auth::user()?->role === 'koordinator')
+                        && in_array(Auth::user()?->role, ['koordinator', 'admin']))
                     ->action(function ($record) {
                         app(PendaftaranService::class)->verifikasiDokumen($record, false);
                         Notification::make()->title('Dokumen ditandai kurang')->warning()->send();
@@ -225,7 +227,7 @@ class PendaftaranMagangResource extends Resource
                             PendaftaranMagang::STATUS_MENUNGGU_WADIR1 => 'wadir1',
                         ];
                         $requiredRole = $levelMap[$record->status] ?? null;
-                        return $requiredRole && $user->role === $requiredRole;
+                        return $requiredRole && ($user->role === $requiredRole || $user->role === 'admin');
                     })
                     ->action(function ($record, array $data) {
                         app(PendaftaranService::class)->processApproval(
@@ -265,7 +267,7 @@ class PendaftaranMagangResource extends Resource
                             PendaftaranMagang::STATUS_MENUNGGU_WADIR1 => 'wadir1',
                         ];
                         $requiredRole = $levelMap[$record->status] ?? null;
-                        return $requiredRole && $user->role === $requiredRole;
+                        return $requiredRole && ($user->role === $requiredRole || $user->role === 'admin');
                     })
                     ->action(function ($record, array $data) {
                         app(PendaftaranService::class)->processApproval(
@@ -275,6 +277,66 @@ class PendaftaranMagangResource extends Resource
                             $data['catatan']
                         );
                         Notification::make()->title('Pendaftaran ditolak')->danger()->send();
+                    }),
+
+                // Terbitkan Surat Magang — setelah disetujui penuh
+                Action::make('terbitkan_surat')
+                    ->label('Terbitkan Surat')
+                    ->icon(Heroicon::OutlinedEnvelope)
+                    ->color('success')
+                    ->form([
+                        TextInput::make('nomor_surat')
+                            ->label('Nomor Surat')
+                            ->required(),
+                        FileUpload::make('file_path')
+                            ->label('File PDF Surat')
+                            ->required()
+                            ->directory('surat-magang')
+                            ->acceptedFileTypes(['application/pdf'])
+                            ->maxSize(5120),
+                    ])
+                    ->visible(fn ($record) => $record->status === PendaftaranMagang::STATUS_DISETUJUI_PENUH
+                        && in_array(Auth::user()?->role, ['koordinator', 'admin']))
+                    ->action(function ($record, array $data) {
+                        \App\Models\SuratMagang::create([
+                            'pendaftaran_id' => $record->id,
+                            'jenis_surat' => 'pengantar',
+                            'nomor_surat' => $data['nomor_surat'],
+                            'file_path' => $data['file_path'],
+                            'status' => 'diterbitkan',
+                            'diterbitkan_at' => now(),
+                        ]);
+                        Notification::make()->title('Surat Magang berhasil diterbitkan!')->success()->send();
+                    }),
+
+                // Unggah LOA Magang — setelah surat pengantar terbit
+                Action::make('unggah_loa')
+                    ->label('Unggah LOA')
+                    ->icon(Heroicon::OutlinedCheckCircle)
+                    ->color('success')
+                    ->form([
+                        TextInput::make('nomor_surat')
+                            ->label('Nomor LOA')
+                            ->required(),
+                        FileUpload::make('file_path')
+                            ->label('File PDF LOA')
+                            ->required()
+                            ->directory('surat-magang')
+                            ->acceptedFileTypes(['application/pdf'])
+                            ->maxSize(5120),
+                    ])
+                    ->visible(fn ($record) => $record->status === PendaftaranMagang::STATUS_SURAT_TERBIT
+                        && in_array(Auth::user()?->role, ['koordinator', 'admin']))
+                    ->action(function ($record, array $data) {
+                        \App\Models\SuratMagang::create([
+                            'pendaftaran_id' => $record->id,
+                            'jenis_surat' => 'loa',
+                            'nomor_surat' => $data['nomor_surat'],
+                            'file_path' => $data['file_path'],
+                            'status' => 'diterbitkan',
+                            'diterbitkan_at' => now(),
+                        ]);
+                        Notification::make()->title('Dokumen LOA berhasil diunggah!')->success()->send();
                     }),
             ])
             ->toolbarActions([

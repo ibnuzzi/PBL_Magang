@@ -13,9 +13,12 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/login', function () {
-    return redirect('/mahasiswa/login');
-})->name('login');
+Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login'])->name('login.post');
+Route::get('/forgot-password', [App\Http\Controllers\Auth\LoginController::class, 'showForgotPasswordForm'])->name('password.request');
+Route::post('/forgot-password', function () {
+    return back()->with('status', 'Link reset password telah dikirim ke email Anda (Simulasi).');
+});
 
 // Logbook Supervisor Public Link Approval Routes
 Route::get('/logbook/approve/{token}', [App\Http\Controllers\LogbookApprovalController::class, 'show'])->name('logbook.approve');

@@ -17,14 +17,13 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
-class AdminPanelProvider extends PanelProvider
+class KoordinatorPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->default()
-            ->id('admin')
-            ->path('admin')
+            ->id('koordinator')
+            ->path('koordinator')
             ->profile(\App\Filament\Pages\EditProfile::class, isSimple: false)
             ->colors([
                 'primary' => Color::Amber,

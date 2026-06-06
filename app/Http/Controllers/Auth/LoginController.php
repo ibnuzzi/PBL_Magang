@@ -9,12 +9,27 @@ use Illuminate\Support\Facades\Auth;
 class LoginController extends Controller
 {
     /**
+     * Get redirect path based on user role.
+     */
+    protected function redirectPathForUser($user): string
+    {
+        return match ($user->role) {
+            'mahasiswa' => '/mahasiswa',
+            'koordinator' => '/koordinator',
+            'wadir1' => '/wadir',
+            'dosen', 'kps', 'kajur' => '/dosen',
+            'admin' => '/admin',
+            default => '/mahasiswa',
+        };
+    }
+
+    /**
      * Show the custom login form.
      */
     public function showLoginForm()
     {
         if (Auth::check()) {
-            return redirect('/admin');
+            return redirect($this->redirectPathForUser(Auth::user()));
         }
 
         return view('auth.login');
@@ -39,14 +54,9 @@ class LoginController extends Controller
 
         if (filter_var($loginField, FILTER_VALIDATE_EMAIL)) {
             $credentials['email'] = $loginField;
-        } elseif (preg_match('/^\d{10,}$/', $loginField)) {
-            // Could be NIM or NIP based on length
-            // Try NIM first (shorter), then NIP
-            if (strlen($loginField) <= 15) {
-                $credentials['nim'] = $loginField;
-            } else {
-                $credentials['nip'] = $loginField;
-            }
+        } elseif (preg_match('/^\d+$/', $loginField)) {
+            // Try NIM first (longer inputs or based on length check)
+            $credentials['nim'] = $loginField;
         } else {
             $credentials['email'] = $loginField;
         }
@@ -64,7 +74,7 @@ class LoginController extends Controller
                 ])->withInput($request->only('email'));
             }
 
-            return redirect()->intended('/admin');
+            return redirect($this->redirectPathForUser($user));
         }
 
         // If NIM/NIP attempt failed, try the other field
@@ -72,15 +82,29 @@ class LoginController extends Controller
             unset($credentials['nim']);
             $credentials['nip'] = $loginField;
             if (Auth::attempt($credentials, $remember)) {
+                $user = Auth::user();
+                if (!$user->is_active) {
+                    Auth::logout();
+                    return back()->withErrors([
+                        'email' => 'Akun Anda tidak aktif. Silakan hubungi admin.',
+                    ])->withInput($request->only('email'));
+                }
                 $request->session()->regenerate();
-                return redirect()->intended('/admin');
+                return redirect($this->redirectPathForUser($user));
             }
         } elseif (isset($credentials['nip'])) {
             unset($credentials['nip']);
             $credentials['nim'] = $loginField;
             if (Auth::attempt($credentials, $remember)) {
+                $user = Auth::user();
+                if (!$user->is_active) {
+                    Auth::logout();
+                    return back()->withErrors([
+                        'email' => 'Akun Anda tidak aktif. Silakan hubungi admin.',
+                    ])->withInput($request->only('email'));
+                }
                 $request->session()->regenerate();
-                return redirect()->intended('/admin');
+                return redirect($this->redirectPathForUser($user));
             }
         }
 
