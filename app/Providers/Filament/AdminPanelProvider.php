@@ -29,7 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->brandLogo(fn () => view('filament.brand'))
+            ->brandLogo(fn() => view('filament.brand'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
@@ -39,7 +39,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([])
             ->renderHook(
                 \Filament\View\PanelsRenderHook::STYLES_AFTER,
-                fn (): string => '
+                fn(): string => '
                     <style>
                         /* Topbar background */
                         .fi-topbar {

@@ -278,7 +278,7 @@ class PendaftaranService
         // Load dihitung dari pendaftaran magang dengan status 'berjalan' (internship ongoing)
         $availableSupervisors = $eligibleSupervisors->filter(function (User $supervisor) {
             $currentLoad = PendaftaranMagang::where('dosen_pembimbing_id', $supervisor->id)
-                ->where('status', PendaftaranMagang::STATUS_BERJALAN)
+                ->whereIn('status', PendaftaranMagang::activeStatuses())
                 ->count();
             
             $quota = $supervisor->kuota_bimbingan ?? 5; // default 5 jika null/kosong
@@ -294,7 +294,7 @@ class PendaftaranService
         // Pilih dosen yang memiliki beban (load) bimbingan paling sedikit
         $supervisorWithLeastLoad = $eligibleSupervisors->sortBy(function (User $supervisor) {
             return PendaftaranMagang::where('dosen_pembimbing_id', $supervisor->id)
-                ->where('status', PendaftaranMagang::STATUS_BERJALAN)
+                ->whereIn('status', PendaftaranMagang::activeStatuses())
                 ->count();
         })->first();
 
@@ -316,5 +316,91 @@ class PendaftaranService
 
         $this->notifikasiService->notifyStatusChange($pendaftaran);
         return $pendaftaran->fresh();
+    }
+
+    /**
+     * Plot dosen pembimbing secara otomatis (Bulk).
+     * Mendistribusikan mahasiswa secara merata ke dosen-dosen yang tersedia.
+     */
+    public function plotDosenOtomatis(array $pendaftaranIds): array
+    {
+        $records = PendaftaranMagang::whereIn('id', $pendaftaranIds)
+            ->whereNull('dosen_pembimbing_id') // Hanya plot yang belum memiliki pembimbing
+            ->get();
+
+        if ($records->isEmpty()) {
+            return ['success' => false, 'message' => 'Tidak ada pendaftaran yang valid untuk diplot (semua yang dipilih mungkin sudah memiliki pembimbing).'];
+        }
+
+        $eligibleSupervisors = User::whereIn('role', ['dosen', 'koordinator', 'kps', 'kajur'])
+            ->where('is_active', true)
+            ->get();
+
+        if ($eligibleSupervisors->isEmpty()) {
+            return ['success' => false, 'message' => 'Tidak ada dosen pembimbing yang aktif di sistem.'];
+        }
+
+        $plottedCount = 0;
+
+        foreach ($records as $pendaftaran) {
+            // Cari dosen dengan load paling sedikit dan masih di bawah kuota
+            $availableSupervisor = $eligibleSupervisors->sortBy(function (User $supervisor) {
+                return PendaftaranMagang::where('dosen_pembimbing_id', $supervisor->id)
+                    ->whereIn('status', PendaftaranMagang::activeStatuses())
+                    ->count();
+            })->filter(function (User $supervisor) {
+                $currentLoad = PendaftaranMagang::where('dosen_pembimbing_id', $supervisor->id)
+                    ->whereIn('status', PendaftaranMagang::activeStatuses())
+                    ->count();
+                $quota = $supervisor->kuota_bimbingan ?? 5;
+                return $currentLoad < $quota;
+            })->first();
+
+            if ($availableSupervisor) {
+                $pendaftaran->update(['dosen_pembimbing_id' => $availableSupervisor->id]);
+                // Beritahu dosen ada bimbingan baru
+                $this->notifikasiService->notifyStatusChange($pendaftaran);
+                $plottedCount++;
+            }
+        }
+
+        if ($plottedCount < $records->count()) {
+            return ['success' => true, 'message' => "Berhasil memplot {$plottedCount} mahasiswa. Sebagian gagal karena sisa kuota seluruh dosen sudah penuh."];
+        }
+
+        return ['success' => true, 'message' => "Berhasil memplot {$plottedCount} mahasiswa secara merata."];
+    }
+
+    /**
+     * Plot dosen pembimbing secara manual ke satu dosen pilihan.
+     */
+    public function plotDosenManual(array $pendaftaranIds, int $dosenId): array
+    {
+        $dosen = User::find($dosenId);
+        if (!$dosen || !in_array($dosen->role, ['dosen', 'koordinator', 'kps', 'kajur'])) {
+            return ['success' => false, 'message' => 'Dosen pembimbing tidak valid.'];
+        }
+
+        $records = PendaftaranMagang::whereIn('id', $pendaftaranIds)->get();
+        if ($records->isEmpty()) {
+            return ['success' => false, 'message' => 'Tidak ada pendaftaran yang dipilih.'];
+        }
+
+        $currentLoad = PendaftaranMagang::where('dosen_pembimbing_id', $dosen->id)
+            ->whereIn('status', PendaftaranMagang::activeStatuses())
+            ->count();
+        $quota = $dosen->kuota_bimbingan ?? 5;
+        $availableQuota = $quota - $currentLoad;
+
+        if ($records->count() > $availableQuota) {
+            return ['success' => false, 'message' => "Gagal: Anda memilih {$records->count()} mahasiswa, tetapi sisa kuota {$dosen->name} hanya {$availableQuota}."];
+        }
+
+        foreach ($records as $pendaftaran) {
+            $pendaftaran->update(['dosen_pembimbing_id' => $dosen->id]);
+            $this->notifikasiService->notifyStatusChange($pendaftaran);
+        }
+
+        return ['success' => true, 'message' => "Berhasil memplot {$records->count()} mahasiswa ke {$dosen->name}."];
     }
 }

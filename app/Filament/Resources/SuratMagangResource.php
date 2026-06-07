@@ -42,6 +42,7 @@ class SuratMagangResource extends Resource
             ->components([
                 Section::make('Data Surat')
                     ->columns(2)
+                    ->columnSpanFull()
                     ->schema([
                         Select::make('pendaftaran_id')
                             ->label('Pendaftaran')

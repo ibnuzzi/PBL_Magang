@@ -44,6 +44,7 @@ class ProgramStudiResource extends Resource
             ->components([
                 Section::make('Data Program Studi')
                     ->columns(2)
+                    ->columnSpanFull()
                     ->schema([
                         TextInput::make('kode')
                             ->label('Kode')

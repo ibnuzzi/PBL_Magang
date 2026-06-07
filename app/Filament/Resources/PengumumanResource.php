@@ -45,6 +45,7 @@ class PengumumanResource extends Resource
             ->components([
                 Section::make('Data Pengumuman')
                     ->columns(2)
+                    ->columnSpanFull()
                     ->schema([
                         TextInput::make('judul')
                             ->label('Judul')

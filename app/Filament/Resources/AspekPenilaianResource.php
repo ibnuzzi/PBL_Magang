@@ -40,6 +40,7 @@ class AspekPenilaianResource extends Resource
             ->components([
                 Section::make('Data Aspek')
                     ->columns(2)
+                    ->columnSpanFull()
                     ->schema([
                         Select::make('parameter_id')
                             ->label('Parameter Penilaian')

@@ -42,6 +42,7 @@ class ApprovalPendaftaranResource extends Resource
             ->components([
                 Section::make('Data Approval')
                     ->columns(2)
+                    ->columnSpanFull()
                     ->schema([
                         Select::make('pendaftaran_id')
                             ->label('Pendaftaran')

@@ -63,44 +63,75 @@ class Login extends BaseLogin
         return $credentials;
     }
 
-    /**
-     * Override to also try NIP if NIM login fails.
-     */
     public function authenticate(): ?\Filament\Auth\Http\Responses\Contracts\LoginResponse
     {
         try {
-            return parent::authenticate();
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            // If we tried NIM and it failed, try NIP
-            $data = $this->form->getState();
-            $loginField = $data['email'];
-
-            if (preg_match('/^\d+$/', $loginField)) {
-                $credentials = [
-                    'nip' => $loginField,
-                    'password' => $data['password'],
-                ];
-
-                $authGuard = \Filament\Facades\Filament::auth();
-
-                if ($authGuard->attempt($credentials, $data['remember'] ?? false)) {
-                    $user = $authGuard->user();
-
-                    if (
-                        $user instanceof \Filament\Models\Contracts\FilamentUser &&
-                        !$user->canAccessPanel(\Filament\Facades\Filament::getCurrentOrDefaultPanel())
-                    ) {
-                        $authGuard->logout();
-                        throw $e;
-                    }
-
-                    session()->regenerate();
-                    return app(\Filament\Auth\Http\Responses\Contracts\LoginResponse::class);
-                }
-            }
-
-            throw $e;
+            $this->rateLimit(5);
+        } catch (\DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException $exception) {
+            $this->getRateLimitedNotification($exception)?->send();
+            return null;
         }
+
+        $data = $this->form->getState();
+        $loginField = $data['email'];
+        $password = $data['password'];
+
+        $field = 'email';
+        
+        if (filter_var($loginField, FILTER_VALIDATE_EMAIL)) {
+            $field = 'email';
+        } elseif (preg_match('/^\d+$/', $loginField)) {
+            $field = 'nim'; // Default to checking NIM first
+        } else {
+            $field = 'email';
+        }
+
+        // Check if user exists in database first
+        $userQuery = \App\Models\User::where($field, $loginField);
+        
+        // If it was numeric, it could be NIP if NIM not found
+        if ($field === 'nim' && !$userQuery->exists()) {
+            $userQuery = \App\Models\User::where('nip', $loginField);
+            if ($userQuery->exists()) {
+                $field = 'nip';
+            }
+        }
+
+        if (!$userQuery->exists()) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'data.email' => 'Akun belum terdaftar di dalam sistem.',
+            ]);
+        }
+
+        $credentials = [
+            $field => $loginField,
+            'password' => $password,
+        ];
+
+        $authGuard = \Filament\Facades\Filament::auth();
+
+        // Attempt login
+        if (! $authGuard->attempt($credentials, $data['remember'] ?? false)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'data.email' => 'Kata sandi yang Anda berikan salah.',
+            ]);
+        }
+
+        $user = $authGuard->user();
+
+        if (
+            $user instanceof \Filament\Models\Contracts\FilamentUser &&
+            ! $user->canAccessPanel(\Filament\Facades\Filament::getCurrentOrDefaultPanel())
+        ) {
+            $authGuard->logout();
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'data.email' => 'Anda tidak memiliki akses ke panel ini.',
+            ]);
+        }
+
+        session()->regenerate();
+        
+        return app(\Filament\Auth\Http\Responses\Contracts\LoginResponse::class);
     }
 
     public function getTitle(): string|\Illuminate\Contracts\Support\Htmlable

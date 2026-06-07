@@ -46,10 +46,11 @@ class PendaftaranMagangResource extends Resource
             ->components([
                 Section::make('Data Pendaftaran')
                     ->columns(2)
+                    ->columnSpanFull()
                     ->schema([
                         Select::make('mahasiswa_id')
                             ->label('Mahasiswa')
-                            ->relationship('mahasiswa', 'name', fn ($query) => $query->where('role', 'mahasiswa'))
+                            ->relationship('mahasiswa', 'name', fn($query) => $query->where('role', 'mahasiswa'))
                             ->searchable()
                             ->preload()
                             ->required()
@@ -62,7 +63,7 @@ class PendaftaranMagangResource extends Resource
                             ->searchable()
                             ->preload()
                             ->native(false)
-                            ->visible(fn ($record) => $record?->lowongan_id !== null),
+                            ->visible(fn($record) => $record?->lowongan_id !== null),
 
                         Select::make('mitra_id')
                             ->label('Mitra Perusahaan')
@@ -71,13 +72,6 @@ class PendaftaranMagangResource extends Resource
                             ->preload()
                             ->required()
                             ->disabled()
-                            ->native(false),
-
-                        Select::make('dosen_pembimbing_id')
-                            ->label('Dosen Pembimbing')
-                            ->relationship('dosenPembimbing', 'name', fn ($query) => $query->whereIn('role', ['dosen', 'koordinator', 'kps', 'kajur']))
-                            ->searchable()
-                            ->preload()
                             ->native(false),
 
                         Select::make('jenis_magang')
@@ -104,7 +98,7 @@ class PendaftaranMagangResource extends Resource
                         Textarea::make('alasan_ditolak')
                             ->label('Alasan Ditolak')
                             ->columnSpanFull()
-                            ->visible(fn ($record) => $record?->status === PendaftaranMagang::STATUS_DITOLAK),
+                            ->visible(fn($record) => $record?->status === PendaftaranMagang::STATUS_DITOLAK),
                     ]),
             ]);
     }
@@ -123,13 +117,15 @@ class PendaftaranMagangResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->limit(25)
-                    ->placeholder('— Mandiri —'),
+                    ->placeholder('— Mandiri —')
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('mitra.nama')
                     ->label('Perusahaan')
                     ->searchable()
                     ->sortable()
-                    ->limit(25),
+                    ->limit(25)
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('dosenPembimbing.name')
                     ->label('Dosen Pembimbing')
@@ -139,25 +135,27 @@ class PendaftaranMagangResource extends Resource
                 TextColumn::make('jenis_magang')
                     ->label('Jenis')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'pilihan' => 'primary',
                         'mandiri' => 'warning',
                         'wajib' => 'danger',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => ucfirst($state)),
+                    ->formatStateUsing(fn(string $state): string => ucfirst($state))
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn (string $state): string => (new PendaftaranMagang(['status' => $state]))->status_color)
-                    ->formatStateUsing(fn (string $state): string => PendaftaranMagang::statusOptions()[$state] ?? ucfirst(str_replace('_', ' ', $state)))
+                    ->color(fn(string $state): string => (new PendaftaranMagang(['status' => $state]))->status_color)
+                    ->formatStateUsing(fn(string $state): string => PendaftaranMagang::statusOptions()[$state] ?? ucfirst(str_replace('_', ' ', $state)))
                     ->wrap(),
 
                 TextColumn::make('tanggal_daftar')
                     ->label('Tanggal Daftar')
                     ->dateTime('d M Y')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('status')
@@ -175,6 +173,14 @@ class PendaftaranMagangResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->recordActions([
+                Action::make('lihat_detail')
+                    ->label('View')
+                    ->icon(Heroicon::OutlinedEye)
+                    ->color('gray')
+                    ->modalHeading('Detail Pendaftaran Magang')
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Tutup')
+                    ->modalContent(fn($record) => view('filament.partials.view-pendaftaran', ['record' => $record])),
                 EditAction::make(),
 
                 // Verifikasi Dokumen — Koordinator cek kelengkapan
@@ -340,8 +346,59 @@ class PendaftaranMagangResource extends Resource
                     }),
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                \Filament\Actions\BulkActionGroup::make([
+                    \Filament\Actions\DeleteBulkAction::make(),
+                    \Filament\Actions\BulkAction::make('plot_otomatis')
+                        ->label('Plot Otomatis')
+                        ->icon('heroicon-o-sparkles')
+                        ->color('primary')
+                        ->requiresConfirmation()
+                        ->modalHeading('Plot Dosen Pembimbing Otomatis')
+                        ->modalDescription('Apakah Anda yakin ingin memplot dosen pembimbing secara otomatis untuk mahasiswa yang dipilih? Mahasiswa akan didistribusikan secara merata ke dosen yang masih memiliki kuota.')
+                        ->visible(fn() => \Illuminate\Support\Facades\Auth::user()?->role === 'koordinator')
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
+                            $result = app(\App\Services\PendaftaranService::class)->plotDosenOtomatis($records->pluck('id')->toArray());
+                            if ($result['success']) {
+                                \Filament\Notifications\Notification::make()->title('Plotting Berhasil')->body($result['message'])->success()->send();
+                            } else {
+                                \Filament\Notifications\Notification::make()->title('Plotting Gagal')->body($result['message'])->danger()->send();
+                            }
+                        }),
+                    \Filament\Actions\BulkAction::make('plot_manual')
+                        ->label('Plot Manual')
+                        ->icon('heroicon-o-user-plus')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Plot Dosen Pembimbing Manual')
+                        ->modalDescription('Pilih dosen pembimbing untuk mahasiswa yang dicentang. Pastikan kuota dosen mencukupi.')
+                        ->visible(fn() => \Illuminate\Support\Facades\Auth::user()?->role === 'koordinator')
+                        ->form([
+                            \Filament\Forms\Components\Select::make('dosen_id')
+                                ->label('Pilih Dosen Pembimbing')
+                                ->options(function () {
+                                    return \App\Models\User::whereIn('role', ['dosen', 'koordinator', 'kps', 'kajur'])
+                                        ->where('is_active', true)
+                                        ->get()
+                                        ->mapWithKeys(function ($dosen) {
+                                            $currentLoad = \App\Models\PendaftaranMagang::where('dosen_pembimbing_id', $dosen->id)
+                                                ->whereIn('status', \App\Models\PendaftaranMagang::activeStatuses())
+                                                ->count();
+                                            $quota = $dosen->kuota_bimbingan ?? 5;
+                                            $sisa = $quota - $currentLoad;
+                                            return [$dosen->id => "{$dosen->name} (Sisa Kuota: {$sisa})"];
+                                        });
+                                })
+                                ->searchable()
+                                ->required(),
+                        ])
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records, array $data) {
+                            $result = app(\App\Services\PendaftaranService::class)->plotDosenManual($records->pluck('id')->toArray(), $data['dosen_id']);
+                            if ($result['success']) {
+                                \Filament\Notifications\Notification::make()->title('Plotting Berhasil')->body($result['message'])->success()->send();
+                            } else {
+                                \Filament\Notifications\Notification::make()->title('Plotting Gagal')->body($result['message'])->danger()->send();
+                            }
+                        }),
                 ]),
             ]);
     }

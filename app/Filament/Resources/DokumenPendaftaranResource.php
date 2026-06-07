@@ -45,6 +45,7 @@ class DokumenPendaftaranResource extends Resource
             ->components([
                 Section::make('Data Dokumen')
                     ->columns(2)
+                    ->columnSpanFull()
                     ->schema([
                         Select::make('pendaftaran_id')
                             ->label('Pendaftaran')
