@@ -30,7 +30,8 @@ class PegawaiResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->role !== 'mahasiswa';
+        $role = auth()->user()->role;
+        return $role !== 'mahasiswa' && $role !== 'dosen' && $role !== 'koordinator';
     }
 
     public static function getEloquentQuery(): Builder

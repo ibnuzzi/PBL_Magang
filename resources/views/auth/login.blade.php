@@ -126,12 +126,7 @@
     <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background-color:#003B7A;">
-                <svg viewBox="0 0 40 40" fill="none" class="w-7 h-7">
-                    <rect x="6" y="10" width="28" height="20" rx="2" fill="white" fill-opacity="0.2"/>
-                    <rect x="9" y="14" width="10" height="12" rx="1" fill="white" fill-opacity="0.8"/>
-                    <rect x="21" y="14" width="10" height="5" rx="1" fill="white"/>
-                    <rect x="21" y="21" width="10" height="5" rx="1" fill="#F5A623"/>
-                </svg>
+                <img src="{{ asset('images/logo-jti.png') }}" alt="Logo JTI Polinema" class="w-7 h-7">
             </div>
             <div>
                 <div class="font-extrabold text-base leading-tight pjs" style="color:#003B7A;">SiMagang JTI</div>
@@ -170,12 +165,7 @@
             {{-- Brand --}}
             <div class="flex items-center gap-3 mb-8">
                 <div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background:rgba(255,255,255,0.15);">
-                    <svg viewBox="0 0 40 40" fill="none" class="w-7 h-7">
-                        <rect x="6" y="10" width="28" height="20" rx="2" fill="white" fill-opacity="0.2"/>
-                        <rect x="9" y="14" width="10" height="12" rx="1" fill="white" fill-opacity="0.8"/>
-                        <rect x="21" y="14" width="10" height="5" rx="1" fill="white"/>
-                        <rect x="21" y="21" width="10" height="5" rx="1" fill="#F5A623"/>
-                    </svg>
+                    <img src="{{ asset('images/logo-jti.png') }}" alt="Logo JTI Polinema" class="w-7 h-7">
                 </div>
                 <div>
                     <div class="font-extrabold text-base text-white pjs">SIMagang JTI</div>

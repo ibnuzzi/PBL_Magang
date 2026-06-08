@@ -28,6 +28,16 @@ class KoordinatorPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->navigationGroups([
+                'Master Data',
+                'Lowongan',
+                'Pendaftaran',
+                'Pelaksanaan',
+                'Penilaian',
+                'Magang',
+                'Informasi',
+                'Bantuan',
+            ])
             ->brandLogo(fn () => view('filament.brand'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
