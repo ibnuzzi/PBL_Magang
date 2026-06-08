@@ -32,11 +32,11 @@ class KoordinatorPanelProvider extends PanelProvider
                 'Master Data',
                 'Lowongan',
                 'Pendaftaran',
-                'Pelaksanaan',
                 'Penilaian',
                 'Magang',
                 'Informasi',
                 'Bantuan',
+                'Pelaksanaan',
             ])
             ->brandLogo(fn () => view('filament.brand'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
